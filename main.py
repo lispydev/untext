@@ -9,34 +9,26 @@ import webview
 import html
 import ast
 import sys
+import code
 
-def user_shell():
-    # let the user override things
-    scope = globals()
-    lines = []
-    running = True
-    while running:
-        try:
-            if lines:
-                line = input("...")
-            else:
-                line = input(">>>")
-        except EOFError as e:
-            running = False
-        else:
-            if line:
-                lines.append(line)
-            else:
-                try:
-                    exec("\n".join(lines), scope)
-                except Exception as e:
-                    print(e)
-                finally:
-                    lines = []
+
+import dom
+from dom import div, block
+
+
+def on_load():
+    # inject css into the code viewer
+    with open("main.css") as f:
+        css = f.read()
+    window.load_css(css)
+
+    # start the REPL
+    code.InteractiveConsole(locals=globals()).interact()
 
     # close everything
     for w in webview.windows:
         w.destroy()
+
 
 
 """
@@ -70,6 +62,8 @@ def render_module(module_node):
 def render_statement(node):
     if isinstance(node, ast.Import):
         return render_import(node)
+    elif isinstance(node, ast.ImportFrom):
+        return render_importfrom(node)
     elif isinstance(node, ast.FunctionDef):
         return render_funcdef(node)
     elif isinstance(node, ast.Expr):
@@ -110,9 +104,25 @@ def render_import(import_node):
     #for alias in import_node.names:
     alias = import_node.names[0]
     if alias.asname is not None:
-        return f"<div>import {alias.name} as {alias.asname}</div>"
+        return div(f"import {alias.name} as {alias.asname}")
     else:
-        return f"<div>import {alias.name}</div>"
+        return div(f"import {alias.name}")
+
+def render_importfrom(node):
+    fragments = []
+    for alias in node.names:
+        if alias.asname is None:
+            fragments.append(f"{alias.name}")
+        else:
+            fragments.append(f"{alias.name} as {alias.asname}")
+    # TODO: support multiline syntax if the fragments are too long
+    fragments = ", ".join(fragments)
+    line = f"from {node.module} import {fragments}"
+    assert node.level == 0
+    return line
+
+
+
 def render_funcdef(funcdef_node):
     n = funcdef_node
     body = []
@@ -626,6 +636,6 @@ tree = ast.parse(source)
 html = render_module(tree)
 window = webview.create_window("test", html=html) #html="<p>text</p>")
 print("starting")
-webview.start(user_shell)
+webview.start(on_load)
 
 
