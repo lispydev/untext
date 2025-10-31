@@ -7,7 +7,7 @@ from webview.dom.dom import DOM
 from webview.dom.element import Element
 import ast
 
-from .dom import register, div, block
+from .dom import register, div, block, add_node, add
 from . import expression
 
 
@@ -59,7 +59,7 @@ def render(dom: DOM, parent: Element, node: ast.stmt):
             raise NotImplementedError("statement.render() not implemented for ast.Assert")
 
         case ast.Import:
-            render_import(dom, parent, node)
+            render_import(parent, node)
         case ast.ImportFrom:
             render_importfrom(dom, parent, node)
 
@@ -136,23 +136,37 @@ def render_module(dom, parent, node):
 AST statement node rendering
 """
 
-def render_import(dom: DOM, parent: Element, node: ast.Import):
-    elt = dom.create_element(div(), parent=parent)
-    register(node, elt)
-    elt.classes = ["import", "row"]
-    text = dom.create_element(div(), elt)
-    text.text = "import "
+def render_import(parent: Element, node: ast.Import):
+    elt = add_node(parent, node, "import import-prefix row-nogap")
+    aliases = add(elt, "row-nogap comma-sep")
+    #text = dom.create_element(div(), elt)
+    #text.text = "import "
     for name in node.names:
-        render_alias(dom, elt, name)
+        comma_separated_item = add(aliases, "row-nogap")
+        render_alias(comma_separated_item, name)
 
 # sub-part of import and importfrom nodes
-def render_alias(dom: DOM, parent: Element, node: ast.alias):
-    text = dom.create_element(div(), parent=parent)
+def render_alias(parent: Element, node: ast.alias):
+    elt = parent.append(div())
+    register(node, elt)
+    elt.classes = ["parameter", "row-nogap"]
     if node.asname is not None:
-        # TODO: use sub-nodes to encode semantically ?
-        text.text = f"{node.name} as {node.asname}"
+        # create an alias (div name, div asname)
+        name = elt.append(div())
+        name.text = node.name
+        asname = elt.append(div())
+        asname.text = node.asname
+        elt.classes.append("as-sep")
     else:
-        text.text = f"{node.name}"
+        # create a name (div name)
+        name = elt.append(div())
+        name.text = node.name
+    #text = dom.create_element(div(), parent=parent)
+    #if node.asname is not None:
+    #    # TODO: use sub-nodes to encode semantically ?
+    #    text.text = f"{node.name} as {node.asname}"
+    #else:
+    #    text.text = f"{node.name}"
 
 
 def render_importfrom(dom: DOM, parent: Element, node: ast.ImportFrom):
@@ -169,7 +183,7 @@ def render_importfrom(dom: DOM, parent: Element, node: ast.ImportFrom):
     fragments_div = dom.create_element(div(), elt)
     fragments_div.classes = ["row"]
     for name in node.names:
-        render_alias(dom, fragments_div, name)
+        render_alias(fragments_div, name)
 
 
 def render_funcdef(dom: DOM, parent: Element, node: ast.FunctionDef):

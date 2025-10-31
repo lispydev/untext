@@ -12,7 +12,7 @@ import sys
 import code
 
 # test import
-import rendering.statement, rendering.expression
+import rendering.statement as statement, rendering.expression as expression
 def f(a, b):
     pass
 
