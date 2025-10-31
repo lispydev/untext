@@ -40,6 +40,8 @@ def block(html=""):
     return f"<div class='block'>{html}</div>"
 
 # TODO: add an easy wrapper for elt = dom.create_element(div, parent=parent); elt.classes = [...]; register(elt)
+#def add(parent, html):
+#    dom.create_element(html, parent=parent)
 
 #def row():
 #    return "<div class='row'></div>"

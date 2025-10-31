@@ -20,7 +20,7 @@ div {
 	/*gap: 5px;*/
 }
 .import > div:not(:first-child):has(+ div)::after {
-	content: ", ";
+	content: ",";
 }
 /*.import * {
 	display: flex;
@@ -34,8 +34,56 @@ div {
 	flex-direction: row;
 }
 .importfrom > div > div:has(+ div)::after {
-	content: ", ";
+	content: ",";
 }
+
+
+/* block prefix */
+.def-prefix::before {
+	content: "def";
+}
+
+
+/* helpers */
+.block-header::after {
+	content: ":";
+}
+.parens::before {
+	content: "(";
+}
+.parens::after {
+	content: ")";
+}
+/* "+ div" means: has a div as a next sibling */
+.comma-sep {
+	gap: 5px;
+}
+.comma-sep > div:has(+ div) {
+	display: flex;
+	flex-direction: row;
+}
+.comma-sep > div:has(+ div)::after {
+	content: ",";
+}
+/* TODO: replace .row with .row-nogap*/
+.row-nogap {
+	display: flex;
+	flex-direction: row;
+}
+.gap {
+	gap: 5px;
+}
+
+
+/* surround function parameters with ( ) and inline them */
+/* ", " separator between function parameters */
+
+/*.funcdef > .header > .parameters > div:has(+ div)::after {
+	content: ",";
+}*/
+
+
+
 
 
 

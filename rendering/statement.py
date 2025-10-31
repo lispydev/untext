@@ -14,7 +14,7 @@ from . import expression
 def render(dom: DOM, parent: Element, node: ast.stmt):
     match type(node):
         case ast.FunctionDef:
-            raise NotImplementedError("statement.render() not implemented for ast.FunctionDef")
+            render_funcdef(dom, parent, node)
         case ast.AsyncFunctionDef:
             raise NotImplementedError("statement.render() not implemented for ast.AsyncFunctionDef")
         case ast.ClassDef:
@@ -172,4 +172,63 @@ def render_importfrom(dom: DOM, parent: Element, node: ast.ImportFrom):
         render_alias(dom, fragments_div, name)
 
 
+def render_funcdef(dom: DOM, parent: Element, node: ast.FunctionDef):
+    assert len(node.type_params) == 0
+    elt = dom.create_element(div(), parent=parent)
+    register(node, elt)
+    elt.classes = ["funcdef"]
+    header = dom.create_element(div(), parent=elt)
+    header.classes = ["header", "row-nogap", "block-header"]
+    funcname = dom.create_element(div(), header)
+    funcname.classes = ["name", "row-nogap", "gap", "def-prefix"]
+    funcname.text = node.name
+    params = dom.create_element(div(), header)
+    params.classes = ["parens", "row-nogap"]
+    params_content = dom.create_element(div(), params)
+    params_content.classes = ["comma-sep", "row-nogap"]
+    render_parameters(dom, params_content, node.args)
+    return
 
+    n = node
+    body = []
+    header = f"def {n.name}({render_arguments(n.args)}):"
+    for statement in n.body:
+        body.append(render_statement(statement))
+    # TODO: support decorators in function definitions
+    assert len(n.decorator_list) == 0
+    # never seen otherwise yet
+    assert n.returns is None
+    assert n.type_comment is None
+
+    header = div(header)
+    body = "".join(body)
+    body = block(body)
+    return div(header + body)
+
+# sub-part of render_funcdef
+def render_parameters(dom: DOM, parent: Element, node: ast.arguments):
+    # TODO: support more cases
+    assert len(node.posonlyargs) == 0
+    assert len(node.kwonlyargs) == 0
+    assert len(node.kw_defaults) == 0
+    assert len(node.defaults) == 0
+    # flags (*args and **kwargs)
+    assert node.vararg is None
+    assert node.kwarg is None
+    for param in node.args:
+        render_param(dom, parent, param)
+    #result = ", ".join([render_arg(arg) for arg in node.args])
+    #return result
+
+# sub-part of render_parameters
+def render_param(dom: DOM, parent: Element, node: ast.arg):
+    # TODO: support argument type annotations
+    assert node.annotation is None
+    assert node.type_comment is None
+    # text metadata (not needed in a no-text IDE)
+    #print(arg.lineno)
+    #print(arg.col_offset)
+    #print(arg.end_lineno)
+    #print(arg.end_col_offset)
+    elt = dom.create_element(div(), parent=parent)
+    elt.text = node.arg

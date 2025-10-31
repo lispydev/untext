@@ -13,6 +13,8 @@ import code
 
 # test import
 import rendering.statement, rendering.expression
+def f(a, b):
+    pass
 
 from rendering import dom
 from rendering.dom import div_old as div, block
