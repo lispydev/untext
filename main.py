@@ -29,22 +29,6 @@ from rendering import statement, expression
 
 def on_load():
     win = CodeWindow("main.py")
-    #code_window("main.py")
-    ## inject css into the code viewer
-    #for name in ["main.css", "css/style.css", "css/syntax.css"]:
-    #    with open(name) as f:
-    #        css = f.read()
-    #    window.load_css(css)
-
-    ## parse the code again to render with window(.dom/document).create_element()
-    #tree = ast.parse(source)
-    ##doc = window.dom.document
-    ##print(doc)
-    #root = window.dom.create_element("<div id='root'></div>")
-    #print(type(window.dom))
-    ## TODO: try window.body
-    #statement.render_module(window.dom, root, tree)
-
     # start the REPL
     #code.InteractiveConsole(locals=globals()).interact()
 
@@ -686,10 +670,11 @@ class CodeWindow:
 
             def keydown(_, key):
                 if key == "r":
-                    code = compile(self.tree, "<ast>", "exec")
-                    exec(code, self.module.__dict__)
+                    bytecode = compile(self.tree, "<ast>", "exec")
+                    exec(bytecode, self.module.__dict__)
                 elif key == "s":
-                    start_shell(self.module)
+                    # start an REPL in the current module
+                    code.InteractiveConsole(locals=self.module.__dict__).interact()
                 print(key)
 
         self.api = CodeWindowAPI()
@@ -708,10 +693,6 @@ class CodeWindow:
         # will fail until the new renderer is complete
         statement.render_module(self.root, self.tree)
 
-
-
-def start_shell(module):
-    code.InteractiveConsole(locals=module.__dict__).interact()
 
 
 webview.create_window("docs", "https://pywebview.flowrl.com")
