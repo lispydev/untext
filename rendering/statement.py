@@ -250,8 +250,8 @@ def render_with(parent: Element, node: ast.With):
 def render_assign(parent: Element, node: ast.Assign):
     assert node.type_comment is None
     print("assign")
-    elt = add_node(parent, node, "row eq-sep gap dbg-show")
-    variables = add(elt)
+    elt = add_node(parent, node, "row equal-sep gap")
+    variables = add(elt, "row gap")
     for t in node.targets:
         expression.render(add(variables), t)
     if len(node.targets) > 1:

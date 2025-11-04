@@ -45,7 +45,7 @@ def render(parent: Element, node: ast.expr):
         case ast.Compare:
             raise NotImplementedError('expression.render() not implemented for ast.Compare')
         case ast.Call:
-            raise NotImplementedError('expression.render() not implemented for ast.Call')
+            render_call(parent, node)
         case ast.FormattedValue:
             raise NotImplementedError('expression.render() not implemented for ast.FormattedValue')
         # case ast.Interpolation:
@@ -116,9 +116,26 @@ def render(parent: Element, node: ast.expr):
 #
 
 
+# TODO: add more DOM encoding
+def render_call(parent: Element, node: ast.Call):
+    elt = add_node(parent, node, "call row")
+    func = render(elt, node.func)
+    args = add(elt, "parens row")
+    comma_separated = add(args, "comma-sep row gap")
+    # positional args
+    for arg in node.args:
+        render(comma_separated, arg)
+    # kwargs
+    for kwarg in node.keywords:
+        # TODO: split the spacing from .equal-sep, not correct here
+        eq_separated = add(comma_separated, "equal-sep row")
+        kw = add(eq_separated, text=kwarg.arg)
+        render(eq_separated, kwarg.value)
+
+
 def render_constant(parent: Element, node: ast.Constant):
     assert node.kind is None
-    elt = add_node(parent, node)
+    elt = add_node(parent, node, "literal")
     # TODO: test carefully
     # there could be other places where html can get by mistake
     # html.escape() means we can't have html in the string literals of the edited source code
@@ -136,6 +153,5 @@ def render_constant(parent: Element, node: ast.Constant):
         print(elt.text)
 
 def render_name(parent: Element, node: ast.Name):
-    elt = add_node(parent, node)
+    elt = add_node(parent, node, "symbol")
     elt.text = node.id
-    pass
