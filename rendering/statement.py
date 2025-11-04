@@ -25,7 +25,7 @@ def render(parent: Element, node: ast.stmt):
         case ast.Delete:
             raise NotImplementedError("statement.render() not implemented for ast.Delete")
         case ast.Assign:
-            raise NotImplementedError("statement.render() not implemented for ast.Assign")
+            render_assign(parent, node)
         case ast.TypeAlias:
             raise NotImplementedError("statement.render() not implemented for ast.TypeAlias")
         case ast.AugAssign:
@@ -68,10 +68,10 @@ def render(parent: Element, node: ast.stmt):
         case ast.Nonlocal:
             raise NotImplementedError("statement.render() not implemented for ast.Nonlocal")
         case ast.Expr:
-            pass
+            expression.render(parent, node.value)
             #raise NotImplementedError("statement.render() not implemented for ast.Expr")
         case ast.Pass:
-            raise NotImplementedError("statement.render() not implemented for ast.Pass")
+            render_pass(parent, node)
         case ast.Break:
             raise NotImplementedError("statement.render() not implemented for ast.Break")
         case ast.Continue:
@@ -167,24 +167,27 @@ def render_importfrom(parent: Element, node: ast.ImportFrom):
 
 def render_funcdef(parent: Element, node: ast.FunctionDef):
     assert len(node.type_params) == 0
+    assert len(node.decorator_list) == 0
+    # never seen otherwise yet
+    assert node.returns is None
+    assert node.type_comment is None
     elt = add_node(parent, node, "funcdef")
     header = add(elt, "row colon-suffix")
     funcname = add(header, "row gap def-prefix", node.name)
     params = add(header, "parens row")
     #params_content = add(params, "comma-sep row gap")
     render_parameters(params, node.args)
+    body = add(elt, "block")
+
+    for stmt in node.body:
+        render(body, stmt)
     return
 
     n = node
     body = []
-    header = f"def {n.name}({render_arguments(n.args)}):"
     for statement in n.body:
         body.append(render_statement(statement))
     # TODO: support decorators in function definitions
-    assert len(n.decorator_list) == 0
-    # never seen otherwise yet
-    assert n.returns is None
-    assert n.type_comment is None
 
     header = div(header)
     body = "".join(body)
@@ -243,6 +246,27 @@ def render_with(parent: Element, node: ast.With):
     result = div(header + body)
     return result
 
+
+def render_assign(parent: Element, node: ast.Assign):
+    assert node.type_comment is None
+    print("assign")
+    elt = add_node(parent, node, "row eq-sep gap dbg-show")
+    variables = add(elt)
+    for t in node.targets:
+        expression.render(add(variables), t)
+    if len(node.targets) > 1:
+        variales.classes.append("parens comma-sep row gap")
+    value = add(elt)
+    expression.render(value, node.value)
+    return
+    #if len(targets) == 1:
+    #    target = targets[0]
+    #    return div(f"{target} = {value}")
+    #else:
+    #    return div(f"{tuple(targets)} = {value}")
+
+
+
 def render_withitem(parent: Element, node: ast.withitem):
     elt = add_node(parent, node)
     if node.optional_vars:
@@ -254,3 +278,7 @@ def render_withitem(parent: Element, node: ast.withitem):
     else:
         # just add <expr>
         expr = expression.render(elt, node.context_expr)
+
+def render_pass(parent: Element, node: ast.Pass):
+    elt = add_node(parent, node, text="pass")
+

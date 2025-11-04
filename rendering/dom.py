@@ -28,7 +28,8 @@ genid = make_counter()
 def register(ast_node: AST, dom_element: Element):
     n = genid()
     dom_element.id = n
-    ast_node.id = n
+    # .id is used by some node types
+    ast_node.node_id = n
     dom_mapping[n] = dom_element
     ast_mapping[n] = ast_node
 

@@ -21,3 +21,8 @@ div {
   gap: 5px;
 }
 
+.dbg-show {
+  background-color: rgba(200,0,0, 0.5);
+  min-width: 100px;
+  min-height: 100px;
+}

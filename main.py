@@ -11,6 +11,16 @@ import ast
 import sys
 import code
 import os
+#import multiprocessing
+#import marshal
+# force=True: do it even in the child process (otherwise, a RuntimeError is raised)
+#multiprocessing.set_start_method("spawn", force=True)
+
+#def run_code(encoded_bytecode, module_dict):
+#    bytecode = marshal.loads(encoded_bytecode)
+#    exec(bytecode, module_dict)
+
+
 
 from types import ModuleType
 
@@ -672,6 +682,15 @@ class CodeWindow:
                 if key == "r":
                     bytecode = compile(self.tree, "<ast>", "exec")
                     exec(bytecode, self.module.__dict__)
+                    #def f():
+                    #    print(os.getpid())
+                    #    print(os.getppid())
+                    #    exec(bytecode, self.module.__dict__)
+                    #encoded = marshal.dumps(bytecode)
+                    #p = multiprocessing.Process(target=run_code, args=(encoded, self.module.__dict__))
+                    #p.start()
+                    #p.join()
+                    #exec(bytecode, self.module.__dict__)
                 elif key == "s":
                     # start an REPL in the current module
                     code.InteractiveConsole(locals=self.module.__dict__).interact()
@@ -695,6 +714,8 @@ class CodeWindow:
 
 
 
+# TODO: find a way to start the IDE exactly once per "r" key press
+# if __name__ == "__main__":
 webview.create_window("docs", "https://pywebview.flowrl.com")
 print("starting")
 webview.start(on_load)

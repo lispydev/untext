@@ -69,4 +69,9 @@
 }
 
 
-
+.equal-sep {
+  gap: 5px;
+}
+.equal-sep > div:has(+ div)::after {
+  content: "=";
+}
