@@ -681,7 +681,7 @@ class CodeWindow:
             def keydown(_, key):
                 if key == "r":
                     bytecode = compile(self.tree, "<ast>", "exec")
-                    exec(bytecode, self.module.__dict__)
+                    #exec(bytecode, self.module.__dict__)
                     #def f():
                     #    print(os.getpid())
                     #    print(os.getppid())

@@ -34,13 +34,13 @@ def render(parent: Element, node: ast.stmt):
             raise NotImplementedError("statement.render() not implemented for ast.AnnAssign")
 
         case ast.For:
-            raise NotImplementedError("statement.render() not implemented for ast.For")
+            render_for(parent, node)
         case ast.AsyncFor:
             raise NotImplementedError("statement.render() not implemented for ast.AsyncFor")
         case ast.While:
             raise NotImplementedError("statement.render() not implemented for ast.While")
         case ast.If:
-            raise NotImplementedError("statement.render() not implemented for ast.If")
+            render_if(parent, node)
         case ast.With:
             return render_with(parent, node)
         case ast.AsyncWith:
@@ -234,26 +234,6 @@ def render_param(parent: Element, node: ast.arg):
     elt = add_node(parent, node, "row", node.arg)
 
 
-def render_with(parent: Element, node: ast.With):
-    assert node.type_comment is None
-    elt = add_node(parent, node)
-    # this breaks if newlines are added for clarity:
-    #header = elt.append("""<div class="with-prefix colon-suffix row gap"></div>""")
-    header = add(elt, "with-prefix colon-suffix row gap")
-    print(header)
-    body = add(elt, "block")
-    for item in node.items:
-        render_withitem(header, item)
-    return
-    pass
-    body = "".join([render_statement(statement) for statement in node.body])
-    items = ", ".join([render_withitem(item) for item in node.items])
-    header = div(f"with {items}:")
-    body = block(body)
-    result = div(header + body)
-    return result
-
-
 def render_assign(parent: Element, node: ast.Assign):
     assert node.type_comment is None
     elt = add_node(parent, node, "row equal-sep gap")
@@ -272,6 +252,103 @@ def render_assign(parent: Element, node: ast.Assign):
     #    return div(f"{tuple(targets)} = {value}")
 
 
+def render_for(parent: Element, node: ast.For):
+    elt = add_node(parent, node)
+    header = add(elt, "row colon-suffix")
+    prefixed = add(header, "for-prefix in-sep row gap")
+    # separators like in-sep need an additional div (add(elt)) to add the separator as a suffix of this wrapper div
+    target = expression.render(add(prefixed, "row gap"), node.target)
+    iterator = expression.render(add(prefixed, "row"), node.iter)
+
+    # TODO: WIP, debug later
+    body = add(elt, "block")
+    for stmt in node.body:
+        render(body, stmt)
+    return
+# def render_for(node):
+    target = render_expr(node.target)
+    it = render_expr(node.iter)
+    header = div(f"for {target} in {it}:")
+    body = [render_statement(statement) for statement in node.body]
+    body = dom.block("".join(body))
+
+    block = div(header + body)
+
+    parts = [block]
+
+    if node.orelse:
+        else_header = div("else:")
+        else_body = [render_statement(statement) for statement in node.orelse]
+        else_body = block("".join(else_body))
+        else_block = div(else_header + else_body)
+        parts.append(else_block)
+
+    assert node.type_comment is None
+
+    result = "".join(parts)
+    return div(result)
+
+
+def render_if(parent: Element, node: ast.If):
+    elt = add_node(parent, node)
+    header = add(elt, "row colon-suffix")
+    header_content = add(header, "row gap if-prefix")
+    expression.render(header_content, node.test)
+    block = add(elt, "block")
+    for stmt in node.body:
+        render(block, stmt)
+    if node.orelse:
+        else_header = add(elt, "row colon-suffix")
+        else_block = add(elt, "block")
+        for stmt in node.orelse:
+            render(else_block, stmt)
+
+    # TODO: process the rest
+    return
+
+    # manual processing
+    # the Python AST represent elif branches as nested else: if
+    if is_elif(node):
+        #print("found elif")
+        return render_elifs(node)
+    test = render_expr(node.test)
+    body = [render_statement(s) for s in node.body]
+
+    if_header = div(f"if {test}:")
+    body = block("".join(body))
+
+    ifpart = div(if_header + body)
+
+    parts = [ifpart]
+
+    if node.orelse:
+        else_header = f"<div>else:</div>"
+        else_body = [render_statement(s) for s in node.orelse]
+        else_body = "".join(else_body)
+        else_body = f"<div style='margin-left: 30px'>{else_body}</div>"
+
+        elsepart = f"<div>{else_header}{else_body}</div>"
+        parts.append(elsepart)
+    return "".join(parts)
+
+def render_with(parent: Element, node: ast.With):
+    assert node.type_comment is None
+    elt = add_node(parent, node)
+    # this breaks if newlines are added for clarity:
+    #header = elt.append("""<div class="with-prefix colon-suffix row gap"></div>""")
+    header = add(elt, "with-prefix colon-suffix row gap")
+    print(header)
+    body = add(elt, "block")
+    for item in node.items:
+        render_withitem(header, item)
+    return
+    pass
+    body = "".join([render_statement(statement) for statement in node.body])
+    items = ", ".join([render_withitem(item) for item in node.items])
+    header = div(f"with {items}:")
+    body = block(body)
+    result = div(header + body)
+    return result
 
 def render_withitem(parent: Element, node: ast.withitem):
     elt = add_node(parent, node)

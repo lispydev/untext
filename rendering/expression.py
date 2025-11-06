@@ -13,7 +13,7 @@ from .dom import register, div, block, add_node, add, add_text
 def render(parent: Element, node: ast.expr):
     match type(node):
         case ast.BoolOp:
-            raise NotImplementedError('expression.render() not implemented for ast.BoolOp')
+            render_boolop(parent, node)
         case ast.NamedExpr:
             raise NotImplementedError('expression.render() not implemented for ast.NamedExpr')
         case ast.BinOp:
@@ -65,7 +65,7 @@ def render(parent: Element, node: ast.expr):
         case ast.Name:
             render_name(parent, node)
         case ast.List:
-            raise NotImplementedError('expression.render() not implemented for ast.List')
+            render_list(parent, node)
         case ast.Tuple:
             raise NotImplementedError('expression.render() not implemented for ast.Tuple')
         case ast.Slice:
@@ -115,6 +115,21 @@ def render(parent: Element, node: ast.expr):
 #
 #
 
+def render_boolop(parent: Element, node: ast.BoolOp):
+    elt = add_node(parent, node, "row gap")
+    elt.classes.append(f"{read_boolop(node.op)}-sep")
+    for v in node.values:
+        # add(..., "row") is a wrapper required by the {op}-sep separator
+        render(add(elt, "row gap"), v)
+
+def read_boolop(op: ast.boolop):
+    if isinstance(op, ast.And):
+        return "and"
+    elif isinstance(op, ast.Or):
+        return "or"
+    else:
+        raise NotImplementedError(f"unknown boolean operator: {op}")
+
 def render_compare(parent: Element, node: ast.Compare):
     # in python, comparisons can be complex sequences, like:
     # 1 < x < y < 6
@@ -162,7 +177,7 @@ def render_call(parent: Element, node: ast.Call):
     comma_separated = add(args, "comma-sep row gap")
     # positional args
     for arg in node.args:
-        render(comma_separated, arg)
+        render(add(comma_separated, "row"), arg)
     # kwargs
     for kwarg in node.keywords:
         # TODO: split the spacing from .equal-sep, not correct here
@@ -182,19 +197,27 @@ def render_constant(parent: Element, node: ast.Constant):
         # TODO: render multiline ("\n") strings with the multiline syntax if they are top-level in the module
 
         # json encoding (not repr) is needed to go through the generated js code
-        text = json.dumps(html.escape(node.value))
-        #print(text)
+        # html escaping is already done by pywebview
+        #text = json.dumps(html.escape(node.value))
+        text = json.dumps(node.value)
         elt.text = text
-        #print(elt.text)
     else:
         elt.text = repr(node.value)
         print(elt.text)
 
 def render_attribute(parent: Element, node: ast.Attribute):
     elt = add_node(parent, node, "attribute row dot-sep")
-    render(elt, node.value)
-    add(elt, node.attr)
+    render(add(elt, "row"), node.value)
+    add(elt, text=node.attr)
 
 def render_name(parent: Element, node: ast.Name):
     elt = add_node(parent, node, "symbol")
     elt.text = node.id
+
+def render_list(parent: Element, node: ast.List):
+    assert isinstance(node.ctx, ast.Load)
+    elt = add_node(parent, node, "brackets row")
+    comma_separated = add(elt, "comma-sep row gap")
+    for x in node.elts:
+        comma_ended = add(comma_separated)
+        render(comma_ended, x)

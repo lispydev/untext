@@ -14,6 +14,13 @@
 	content: ")";
 }
 
+.brackets::before {
+	content: "[";
+}
+.brackets::after {
+	content: "]";
+}
+
 /*
  TODO: (?) use a .comma-suffix class on every item instead of .comma-sep
 
@@ -72,6 +79,14 @@
 	content: "assert";
 }
 
+.for-prefix::before {
+	content: "for";
+}
+
+.if-prefix::before {
+	content: "if";
+}
+
 
 
 /* separators */
@@ -87,5 +102,15 @@
 }
 .dot-sep > div:has(+ div)::after {
 	content: ".";
+}
+/* keyword separators */
+.in-sep > div:has(+ div)::after {
+	content: "in";
+}
+.and-sep > div:has(+ div)::after {
+	content: "and";
+}
+.or-sep > div:has(+ div)::after {
+	content: "or";
 }
 
