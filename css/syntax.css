@@ -86,6 +86,9 @@
 .if-prefix::before {
 	content: "if";
 }
+.else-prefix::before {
+	content: "else";
+}
 
 
 

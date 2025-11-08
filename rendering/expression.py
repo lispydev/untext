@@ -24,13 +24,13 @@ def render(parent: Element, node: ast.expr):
         case ast.Lambda:
             raise NotImplementedError('expression.render() not implemented for ast.Lambda')
         case ast.IfExp:
-            raise NotImplementedError('expression.render() not implemented for ast.IfExp')
+            render_ifexp(parent, node)
         case ast.Dict:
             raise NotImplementedError('expression.render() not implemented for ast.Dict')
         case ast.Set:
             raise NotImplementedError('expression.render() not implemented for ast.Set')
         case ast.ListComp:
-            raise NotImplementedError('expression.render() not implemented for ast.ListComp')
+            render_list_comprehension(parent, node)
         case ast.SetComp:
             raise NotImplementedError('expression.render() not implemented for ast.SetComp')
         case ast.DictComp:
@@ -193,6 +193,43 @@ def read_boolop(op: ast.boolop):
         return "or"
     else:
         raise NotImplementedError(f"unknown boolean operator: {op}")
+
+
+def render_ifexp(parent: Element, node: ast.IfExp):
+    elt = add_node(parent, node, "row gap")
+    condition = add(elt)
+    test = render(condition, node.test)
+
+    if_part = add(elt, "if-prefix row gap")
+    if_expr = render(if_part, node.body)
+    else_part = add(elt, "else-prefix row gap")
+    else_expr = render(else_part, node.orelse)
+
+
+def render_list_comprehension(parent: Element, node: ast.ListComp):
+    elt = add_node(parent, node, "brackets row")
+    spaced_content = add(elt, "row gap")
+    selected = render(spaced_content, node.elt)
+    # TODO: test with more than 1 generator
+    generators = add(spaced_content, "row gap")
+    for g in node.generators:
+        expr = render_comprehension_generator(generators, g)
+
+def render_comprehension_generator(parent: Element, node: ast.comprehension):
+    # TODO: support async
+    assert node.is_async == 0
+    # TODO: support conditions in comprehensions
+    assert len(node.ifs) == 0
+
+    elt = add_node(parent, node, "for-prefix in-sep row gap")
+    # need a wrapper (row gap is the interaction with the in suffix) for in-sep
+    target = render(add(elt, "row gap"), node.target)
+    it = render(elt, node.iter)
+
+
+
+
+
 
 def render_compare(parent: Element, node: ast.Compare):
     # in python, comparisons can be complex sequences, like:
