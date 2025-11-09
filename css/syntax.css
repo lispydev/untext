@@ -115,6 +115,13 @@
 	content: "return";
 }
 
+.raise-prefix::before {
+	content: "raise";
+}
+
+.while-prefix::before {
+	content: "while";
+}
 
 
 /* separators */

@@ -38,7 +38,7 @@ def render(parent: Element, node: ast.stmt):
         case ast.AsyncFor:
             raise NotImplementedError("statement.render() not implemented for ast.AsyncFor")
         case ast.While:
-            raise NotImplementedError("statement.render() not implemented for ast.While")
+            render_while(parent, node)
         case ast.If:
             render_if(parent, node)
         case ast.With:
@@ -50,7 +50,7 @@ def render(parent: Element, node: ast.stmt):
             raise NotImplementedError("statement.render() not implemented for ast.Match")
 
         case ast.Raise:
-            raise NotImplementedError("statement.render() not implemented for ast.Raise")
+            render_raise(parent, node)
         case ast.Try:
             raise NotImplementedError("statement.render() not implemented for ast.Try")
         case ast.TryStar:
@@ -130,6 +130,12 @@ def render_module(parent: Element, node: ast.Module):
 """
 AST statement node rendering
 """
+
+def render_raise(parent: Element, node: ast.Raise):
+    # TODO: check if support for this attribute is needed
+    assert node.cause is None
+    elt = add_node(parent, node, "raise-prefix row gap")
+    expression.render(elt, node.exc)
 
 
 def render_assert(parent: Element, node: ast.Assert):
@@ -309,6 +315,17 @@ def render_for(parent: Element, node: ast.For):
     result = "".join(parts)
     return div(result)
 
+def render_while(parent: Element, node: ast.While):
+    elt = add_node(parent, node)
+    header = add(elt, "colon-suffix row")
+    header_content = add(header, "while-prefix row gap")
+    test = expression.render(header_content, node.test)
+    body = add(elt, "block")
+    for stmt in node.body:
+        render(body, stmt)
+    assert not node.orelse
+    # if node.orelse:
+    #else_body = [render_statement(statement) for statement in node.orelse]
 
 def render_if(parent: Element, node: ast.If):
     elt = add_node(parent, node)
@@ -358,7 +375,7 @@ def render_with(parent: Element, node: ast.With):
     # this breaks if newlines are added for clarity:
     #header = elt.append("""<div class="with-prefix colon-suffix row gap"></div>""")
     header = add(elt, "with-prefix colon-suffix row gap")
-    print(header)
+    #print(header)
     body = add(elt, "block")
     for item in node.items:
         render_withitem(header, item)

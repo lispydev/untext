@@ -359,7 +359,7 @@ def render_constant(parent: Element, node: ast.Constant):
         elt.text = text
     else:
         elt.text = repr(node.value)
-        print(elt.text)
+        #print(elt.text)
 
 def render_attribute(parent: Element, node: ast.Attribute):
     elt = add_node(parent, node, "attribute row dot-sep")
