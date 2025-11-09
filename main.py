@@ -146,8 +146,9 @@ def render_importfrom(node):
 def render_funcdef(funcdef_node):
     n = funcdef_node
     body = []
-    # TODO: find what this is
-    assert len(n.type_params) == 0
+    # type_params is a 3.12+ feature
+    # TODO: use type_comment, wait for pypy to reach 3.12 or stop supporting pypy
+    #assert len(n.type_params) == 0
     header = f"def {n.name}({render_arguments(n.args)}):"
     for statement in n.body:
         body.append(render_statement(statement))

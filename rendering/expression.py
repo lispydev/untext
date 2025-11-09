@@ -68,7 +68,7 @@ def render(parent: Element, node: ast.expr):
         case ast.List:
             render_list(parent, node)
         case ast.Tuple:
-            raise NotImplementedError('expression.render() not implemented for ast.Tuple')
+            render_tuple(parent, node)
         case ast.Slice:
             raise NotImplementedError('expression.render() not implemented for ast.Slice')
         case default:

@@ -26,8 +26,10 @@ def render(parent: Element, node: ast.stmt):
             raise NotImplementedError("statement.render() not implemented for ast.Delete")
         case ast.Assign:
             render_assign(parent, node)
-        case ast.TypeAlias:
-            raise NotImplementedError("statement.render() not implemented for ast.TypeAlias")
+        # 3.12+ feature
+        # TODO: ignore it until pypy reaches 3.12 or stop supporting pypy
+        # case ast.TypeAlias:
+        #     raise NotImplementedError("statement.render() not implemented for ast.TypeAlias")
         case ast.AugAssign:
             render_augassign(parent, node)
         case ast.AnnAssign:
@@ -179,7 +181,10 @@ def render_importfrom(parent: Element, node: ast.ImportFrom):
 
 
 def render_funcdef(parent: Element, node: ast.FunctionDef):
-    assert len(node.type_params) == 0
+    # 3.12+ feature
+    # instead, see: type_comment
+    # TODO: wait for pypy to reach 3.12 or explicitely stop supporting pypy
+    #assert len(node.type_params) == 0
     assert len(node.decorator_list) == 0
     # never seen otherwise yet
     assert node.returns is None
