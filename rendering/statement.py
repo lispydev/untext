@@ -20,7 +20,7 @@ def render(parent: Element, node: ast.stmt):
         case ast.ClassDef:
             raise NotImplementedError("statement.render() not implemented for ast.ClassDef")
         case ast.Return:
-            raise NotImplementedError("statement.render() not implemented for ast.Return")
+            render_return(parent, node)
 
         case ast.Delete:
             raise NotImplementedError("statement.render() not implemented for ast.Delete")
@@ -234,6 +234,11 @@ def render_param(parent: Element, node: ast.arg):
     elt = add_node(parent, node, "row", node.arg)
 
 
+def render_return(parent: Element, node: ast.Assign):
+    elt = add_node(parent, node, "return-prefix row gap")
+    if node.value is not None:
+        expression.render(elt, node.value)
+
 def render_assign(parent: Element, node: ast.Assign):
     assert node.type_comment is None
     elt = add_node(parent, node, "row equal-sep gap")
@@ -314,7 +319,7 @@ def render_if(parent: Element, node: ast.If):
     for stmt in node.body:
         render(block, stmt)
     if node.orelse:
-        else_header = add(elt, "row colon-suffix")
+        else_header = add(elt, "row colon-suffix else-prefix")
         else_block = add(elt, "block")
         for stmt in node.orelse:
             render(else_block, stmt)

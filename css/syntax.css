@@ -1,4 +1,4 @@
-@charset "UTF-8"
+/*@charset "UTF-8";*/
 /* gaps are managed by the user */
 
 
@@ -109,6 +109,10 @@
 /* f-string prefix */
 .f-prefix::before {
 	content: "f";
+}
+
+.return-prefix::before {
+	content: "return";
 }
 
 
