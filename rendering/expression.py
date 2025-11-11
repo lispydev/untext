@@ -334,7 +334,11 @@ def render_joinedstr(parent: Element, node: ast.JoinedStr):
             assert isinstance(e, ast.Constant)
             assert isinstance(e.value, str)
             # TODO: escape like in string formatting
-            add(quoted, text=e.value)
+            text = json.dumps(e.value).replace("\\", "\\\\").replace("'","\\'")
+            # remove quotes (and let the css quotes surround the whole f-string)
+            text = text[1:-1]
+            print(text)
+            add(quoted, text=text)
             #parts.append(e.value)
 
 
@@ -390,7 +394,7 @@ def render_list(parent: Element, node: ast.List):
     elt = add_node(parent, node, "brackets row")
     comma_separated = add(elt, "comma-sep row gap")
     for x in node.elts:
-        comma_ended = add(comma_separated)
+        comma_ended = add(comma_separated, "row")
         render(comma_ended, x)
 
 
