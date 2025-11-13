@@ -145,10 +145,10 @@ or: (more efficient)
 }
 """
 def render_binop(parent: Element, node: ast.BinOp):
-    elt = add_node(parent, node, "row gap")
-    elt.classes.append(f"{read_binaryop(node.op)}-sep")
-    left = render(add(elt, "row"), node.left)
-    right = render(add(elt, "row"), node.right)
+    elt = add_node(parent, node, "operation row gap dbg-show")
+    elt.attributes["data-operator"] = read_binaryop(node.op)
+    left = render(add(elt, "row gap"), node.left)
+    right = render(add(elt, "row gap"), node.right)
 
 def read_binaryop(op: ast.operator):
     # css classes cannot have special characters like +
