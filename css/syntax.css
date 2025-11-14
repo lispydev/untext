@@ -169,7 +169,7 @@
 }
 .operation > div:has(+ div)::after {
   /*content: var(--operator);*/
-  content: "TODO OPERATOR";
+  content: "TODO OPERATOR";
 }
 
 
