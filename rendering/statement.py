@@ -14,35 +14,35 @@ from . import expression
 def render(parent: Element, node: ast.stmt):
     match type(node):
         case ast.FunctionDef:
-            render_funcdef(parent, node)
+            return render_funcdef(parent, node)
         case ast.AsyncFunctionDef:
             raise NotImplementedError("statement.render() not implemented for ast.AsyncFunctionDef")
         case ast.ClassDef:
-            render_classdef(parent, node)
+            return render_classdef(parent, node)
         case ast.Return:
-            render_return(parent, node)
+            return render_return(parent, node)
 
         case ast.Delete:
             raise NotImplementedError("statement.render() not implemented for ast.Delete")
         case ast.Assign:
-            render_assign(parent, node)
+            return render_assign(parent, node)
         # 3.12+ feature
         # TODO: ignore it until pypy reaches 3.12 or stop supporting pypy
         # case ast.TypeAlias:
         #     raise NotImplementedError("statement.render() not implemented for ast.TypeAlias")
         case ast.AugAssign:
-            render_augassign(parent, node)
+            return render_augassign(parent, node)
         case ast.AnnAssign:
             raise NotImplementedError("statement.render() not implemented for ast.AnnAssign")
 
         case ast.For:
-            render_for(parent, node)
+            return render_for(parent, node)
         case ast.AsyncFor:
             raise NotImplementedError("statement.render() not implemented for ast.AsyncFor")
         case ast.While:
-            render_while(parent, node)
+            return render_while(parent, node)
         case ast.If:
-            render_if(parent, node)
+            return render_if(parent, node)
         case ast.With:
             return render_with(parent, node)
         case ast.AsyncWith:
@@ -52,28 +52,28 @@ def render(parent: Element, node: ast.stmt):
             raise NotImplementedError("statement.render() not implemented for ast.Match")
 
         case ast.Raise:
-            render_raise(parent, node)
+            return render_raise(parent, node)
         case ast.Try:
             raise NotImplementedError("statement.render() not implemented for ast.Try")
         case ast.TryStar:
             raise NotImplementedError("statement.render() not implemented for ast.TryStar")
         case ast.Assert:
-            render_assert(parent, node)
+            return render_assert(parent, node)
 
         case ast.Import:
-            render_import(parent, node)
+            return render_import(parent, node)
         case ast.ImportFrom:
-            render_importfrom(parent, node)
+            return render_importfrom(parent, node)
 
         case ast.Global:
             raise NotImplementedError("statement.render() not implemented for ast.Global")
         case ast.Nonlocal:
             raise NotImplementedError("statement.render() not implemented for ast.Nonlocal")
         case ast.Expr:
-            expression.render(parent, node.value)
+            return expression.render(parent, node.value)
             #raise NotImplementedError("statement.render() not implemented for ast.Expr")
         case ast.Pass:
-            render_pass(parent, node)
+            return render_pass(parent, node)
         case ast.Break:
             raise NotImplementedError("statement.render() not implemented for ast.Break")
         case ast.Continue:
@@ -123,38 +123,42 @@ def render(parent: Element, node: ast.stmt):
 
 # TODO: find a place to put this function (main.py ?)
 # modules are not statements, they are top-level programs
-def render_module(parent: Element, node: ast.Module):
+def render_module(parent: Element, node: ast.Module) -> Element:
     elt = add_node(parent, node)
     for stmt in node.body:
         render(elt, stmt)
+    return elt
 
 
 """
 AST statement node rendering
 """
 
-def render_raise(parent: Element, node: ast.Raise):
+def render_raise(parent: Element, node: ast.Raise) -> Element:
     # TODO: check if support for this attribute is needed
     assert node.cause is None
     elt = add_node(parent, node, "raise-prefix row gap")
     expression.render(elt, node.exc)
+    return elt
 
 
-def render_assert(parent: Element, node: ast.Assert):
+def render_assert(parent: Element, node: ast.Assert) -> Element:
     # TODO: support assertion messages
     assert node.msg is None
     elt = add_node(parent, node, "assert-prefix gap row")
     expression.render(elt, node.test)
+    return elt
 
-def render_import(parent: Element, node: ast.Import):
+def render_import(parent: Element, node: ast.Import) -> Element:
     elt = add_node(parent, node, "import import-prefix row")
     aliases = add(elt, "aliases row comma-sep gap")
     for name in node.names:
         #comma_separated_item = add(aliases, "row")
         render_alias(aliases, name)
+    return elt
 
 # sub-part of import and importfrom nodes
-def render_alias(parent: Element, node: ast.alias):
+def render_alias(parent: Element, node: ast.alias) -> Element:
     elt = add_node(parent, node, "alias row")
     if node.asname is not None:
         # create an alias (div (div name) "as" (div asname))
@@ -165,9 +169,10 @@ def render_alias(parent: Element, node: ast.alias):
         # TODO: find a class name for "unaliased import"
         alias = add(elt)
         name = add_text(alias, node.name)
+    return elt
 
 
-def render_importfrom(parent: Element, node: ast.ImportFrom):
+def render_importfrom(parent: Element, node: ast.ImportFrom) -> Element:
     assert node.level == 0
     elt = add_node(parent, node, "importfrom row gap")
 
@@ -179,9 +184,10 @@ def render_importfrom(parent: Element, node: ast.ImportFrom):
     aliases = add(import_prefixed, "aliases row comma-sep gap")
     for name in node.names:
         render_alias(aliases, name)
+    return elt
 
 
-def render_funcdef(parent: Element, node: ast.FunctionDef):
+def render_funcdef(parent: Element, node: ast.FunctionDef) -> Element:
     # 3.12+ feature
     # instead, see: type_comment
     # TODO: wait for pypy to reach 3.12 or explicitely stop supporting pypy
@@ -200,21 +206,11 @@ def render_funcdef(parent: Element, node: ast.FunctionDef):
 
     for stmt in node.body:
         render(body, stmt)
-    return
+    return elt
 
-    n = node
-    body = []
-    for statement in n.body:
-        body.append(render_statement(statement))
-    # TODO: support decorators in function definitions
-
-    header = div(header)
-    body = "".join(body)
-    body = block(body)
-    return div(header + body)
 
 # sub-part of render_funcdef
-def render_parameters(parent: Element, node: ast.arguments):
+def render_parameters(parent: Element, node: ast.arguments) -> Element:
     # TODO: support more cases
     assert len(node.posonlyargs) == 0
     assert len(node.kwonlyargs) == 0
@@ -229,9 +225,10 @@ def render_parameters(parent: Element, node: ast.arguments):
         render_param(comma_separated_item, param)
     #result = ", ".join([render_arg(arg) for arg in node.args])
     #return result
+    return elt
 
 # sub-part of render_parameters
-def render_param(parent: Element, node: ast.arg):
+def render_param(parent: Element, node: ast.arg) -> Element:
     # TODO: support argument type annotations
     assert node.annotation is None
     assert node.type_comment is None
@@ -244,8 +241,9 @@ def render_param(parent: Element, node: ast.arg):
     # comma-separated items must be inlined,
     # so that the comma is on the same line
     elt = add_node(parent, node, "row", node.arg)
+    return elt
 
-def render_classdef(parent: Element, node: ast.ClassDef):
+def render_classdef(parent: Element, node: ast.ClassDef) -> Element:
     # TODO: support decorators
     # TODO: support type_params
     assert not node.decorator_list
@@ -266,13 +264,15 @@ def render_classdef(parent: Element, node: ast.ClassDef):
     body = add(elt, "block")
     for stmt in node.body:
         render(body, stmt)
+    return elt
 
-def render_return(parent: Element, node: ast.Assign):
+def render_return(parent: Element, node: ast.Return) -> Element:
     elt = add_node(parent, node, "return-prefix row gap")
     if node.value is not None:
         expression.render(elt, node.value)
+    return elt
 
-def render_assign(parent: Element, node: ast.Assign):
+def render_assign(parent: Element, node: ast.Assign) -> Element:
     assert node.type_comment is None
     elt = add_node(parent, node, "row equal-sep gap")
     variables = add(elt, "row gap")
@@ -288,13 +288,14 @@ def render_assign(parent: Element, node: ast.Assign):
     #    return div(f"{target} = {value}")
     #else:
     #    return div(f"{tuple(targets)} = {value}")
+    return elt
 
 
 # TODO: fix: the operator must be displayed
 # format: <node> <op>= <node>
 # <node><gap><op>=<gap><node>
 # (<node> (<op>=) <node>)
-def render_augassign(parent: Element, node: ast.AugAssign):
+def render_augassign(parent: Element, node: ast.AugAssign) -> Element:
     elt = add_node(parent, node, "row gap")
     target = expression.render(add(elt), node.target)
     assign_operator = add(elt, "equal-sep")
@@ -303,10 +304,12 @@ def render_augassign(parent: Element, node: ast.AugAssign):
     #op = expression.read_binaryop(node.op)
     #elt.classes.append(f"{op}-sep")
     val = expression.render(add(elt), node.value)
+    return elt
 
 
 
-def render_for(parent: Element, node: ast.For):
+def render_for(parent: Element, node: ast.For) -> Element:
+    assert node.type_comment is None
     elt = add_node(parent, node)
     header = add(elt, "row colon-suffix")
     prefixed = add(header, "for-prefix in-sep row gap")
@@ -318,31 +321,27 @@ def render_for(parent: Element, node: ast.For):
     body = add(elt, "block")
     for stmt in node.body:
         render(body, stmt)
-    return
-# def render_for(node):
-    target = render_expr(node.target)
-    it = render_expr(node.iter)
-    header = div(f"for {target} in {it}:")
-    body = [render_statement(statement) for statement in node.body]
-    body = dom.block("".join(body))
 
-    block = div(header + body)
+    # TODO: process for: else: blocks
+    # (add more headers after the main body)
+    assert not node.orelse
+    #parts = [block]
+    #if node.orelse:
+    #    else_header = div("else:")
+    #    else_body = [render_statement(statement) for statement in node.orelse]
+    #    else_body = block("".join(else_body))
+    #    else_block = div(else_header + else_body)
+    #    parts.append(else_block)
 
-    parts = [block]
+    #result = "".join(parts)
+    #return div(result)
 
-    if node.orelse:
-        else_header = div("else:")
-        else_body = [render_statement(statement) for statement in node.orelse]
-        else_body = block("".join(else_body))
-        else_block = div(else_header + else_body)
-        parts.append(else_block)
 
-    assert node.type_comment is None
+    return elt
 
-    result = "".join(parts)
-    return div(result)
 
-def render_while(parent: Element, node: ast.While):
+
+def render_while(parent: Element, node: ast.While) -> Element:
     elt = add_node(parent, node)
     header = add(elt, "colon-suffix row")
     header_content = add(header, "while-prefix row gap")
@@ -353,8 +352,9 @@ def render_while(parent: Element, node: ast.While):
     assert not node.orelse
     # if node.orelse:
     #else_body = [render_statement(statement) for statement in node.orelse]
+    return elt
 
-def render_if(parent: Element, node: ast.If):
+def render_if(parent: Element, node: ast.If) -> Element:
     elt = add_node(parent, node)
     header = add(elt, "row colon-suffix")
     header_content = add(header, "row gap if-prefix")
@@ -368,35 +368,36 @@ def render_if(parent: Element, node: ast.If):
         for stmt in node.orelse:
             render(else_block, stmt)
 
-    # TODO: process the rest
-    return
+    return elt
 
-    # manual processing
-    # the Python AST represent elif branches as nested else: if
-    if is_elif(node):
-        #print("found elif")
-        return render_elifs(node)
-    test = render_expr(node.test)
-    body = [render_statement(s) for s in node.body]
+    # TODO: process elifs
 
-    if_header = div(f"if {test}:")
-    body = block("".join(body))
+    ## manual processing
+    ## the Python AST represent elif branches as nested else: if
+    #if is_elif(node):
+    #    #print("found elif")
+    #    return render_elifs(node)
+    #test = render_expr(node.test)
+    #body = [render_statement(s) for s in node.body]
 
-    ifpart = div(if_header + body)
+    #if_header = div(f"if {test}:")
+    #body = block("".join(body))
 
-    parts = [ifpart]
+    #ifpart = div(if_header + body)
 
-    if node.orelse:
-        else_header = f"<div>else:</div>"
-        else_body = [render_statement(s) for s in node.orelse]
-        else_body = "".join(else_body)
-        else_body = f"<div style='margin-left: 30px'>{else_body}</div>"
+    #parts = [ifpart]
 
-        elsepart = f"<div>{else_header}{else_body}</div>"
-        parts.append(elsepart)
-    return "".join(parts)
+    #if node.orelse:
+    #    else_header = f"<div>else:</div>"
+    #    else_body = [render_statement(s) for s in node.orelse]
+    #    else_body = "".join(else_body)
+    #    else_body = f"<div style='margin-left: 30px'>{else_body}</div>"
 
-def render_with(parent: Element, node: ast.With):
+    #    elsepart = f"<div>{else_header}{else_body}</div>"
+    #    parts.append(elsepart)
+    #return "".join(parts)
+
+def render_with(parent: Element, node: ast.With) -> Element:
     assert node.type_comment is None
     elt = add_node(parent, node)
     # this breaks if newlines are added for clarity:
@@ -410,8 +411,9 @@ def render_with(parent: Element, node: ast.With):
         render_withitem(header_content, item)
     for stmt in node.body:
         render(body, stmt)
+    return elt
 
-def render_withitem(parent: Element, node: ast.withitem):
+def render_withitem(parent: Element, node: ast.withitem) -> Element:
     elt = add_node(parent, node)
     if node.optional_vars:
         # add "<expr> as <name>"
@@ -422,7 +424,9 @@ def render_withitem(parent: Element, node: ast.withitem):
         # just add <expr>
         unnamed = add(elt)
         expr = expression.render(unnamed, node.context_expr)
+    return elt
 
-def render_pass(parent: Element, node: ast.Pass):
+def render_pass(parent: Element, node: ast.Pass) -> Element:
     elt = add_node(parent, node, text="pass")
+    return elt
 
