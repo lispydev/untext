@@ -8,7 +8,7 @@ import ast
 import html
 import json
 
-from .dom import register, div, block, add_node, add, add_text
+from .dom import register, div, block, add_node, add, add_text, add_pre
 
 
 def render(parent: Element, node: ast.expr):
@@ -388,7 +388,8 @@ def render_joinedstr(parent: Element, node: ast.JoinedStr) -> Element:
             text = json.dumps(e.value).replace("\\", "\\\\").replace("'", "\\'")
             # remove quotes (and let the css quotes surround the whole f-string)
             text = text[1:-1]
-            add(quoted, text=text)
+            #add(quoted, text=text)
+            pre = add_pre(quoted, text=text)
             #parts.append(e.value)
     return elt
 

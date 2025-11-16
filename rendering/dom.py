@@ -44,6 +44,9 @@ def div_old(html=""):
     return f"<div>{html}</div>"
 def div():
     return "<div></div>"
+# TODO: use for strings that contain spaces
+def pre():
+    return "<pre></pre>"
 
 def block(html=""):
     return f"<div class='block'>{html}</div>"
@@ -56,6 +59,11 @@ def add(parent: Element, cls: str | list = None, text: str = None):
         elt.classes = cls.split(" ") if isinstance(cls, str) else cls
     if text:
         elt.text = text
+    return elt
+
+def add_pre(parent: Element, text: str):
+    elt = parent.append(pre())
+    elt.text = text
     return elt
 
 # TODO: deprecated, use add() instead

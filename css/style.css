@@ -33,3 +33,18 @@ div {
   min-width: 100px;
   min-height: 100px;
 }
+/* used for debugging inline text nodes */
+.bg-red {
+  background-color: rgba(200, 0, 0, 0.5);
+}
+
+/* reset the style of <pre> tag */
+pre {
+  margin: 0;
+  font: inherit;
+  /*display: flex;
+  flex-direction: column;*/
+  /*padding: 0;*/
+  /*font-size: 1em;*/ /* reset font size to the default */
+}
+
