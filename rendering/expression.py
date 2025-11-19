@@ -126,24 +126,19 @@ def render_boolop(parent: Element, node: ast.BoolOp) -> Element:
 
 
 """
-TODO: rewrite this code to use css classes for operator rendering and html for operator encoding
+this code uses html data-attributes to encode the operator, and css to render it dynamically
 
-example (only works on binary operators, not comparisons):
+the html output in theory:
 <div class="operation" data-operator="+">
   <div class="operand">a</div>
   <div class="operand">b</div>
 </div>
-css:
-.operation {
-  --operator: attr(data-operator);
-}
-.operation > .operand:has(+ .operand)::after {
-  content: var(--operator);
-}
-or: (more efficient)
-.operation > .operand + .operand::before {
-  content: var(data-operator);
-}
+
+in practice, css support is lacking, so we need this:
+<div class="operation" data-operator="+">
+  <div class="operand" data-operator="+">a<div>
+  <div class="operand">b</div>
+</div>
 """
 def render_binop(parent: Element, node: ast.BinOp) -> Element:
     elt = add_node(parent, node, "operation row gap")
@@ -282,10 +277,6 @@ def render_comprehension_generator(parent: Element, node: ast.comprehension) -> 
     return elt
 
 
-
-
-
-
 def render_compare(parent: Element, node: ast.Compare) -> Element:
     # in python, comparisons can be complex sequences, like:
     # 1 < x < y < 6
@@ -305,13 +296,13 @@ def read_op(op: ast.operator):
     elif isinstance(op, ast.NotEq):
         return "!="
     elif isinstance(op, ast.Lt):
-        return html.escape("<")
+        return "<"
     elif isinstance(op, ast.LtE):
-        return html.escape("<=")
+        return "<="
     elif isinstance(op, ast.Gt):
-        return html.escape(">")
+        return ">"
     elif isinstance(op, ast.GtE):
-        return html.escape(">=")
+        return ">="
     elif isinstance(op, ast.Is):
         return "is"
     elif isinstance(op, ast.IsNot):

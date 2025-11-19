@@ -5,6 +5,8 @@ TODO: refactor html generation
 TODO: write helpers for body generation
 """
 
+#print(1 < 3 < 5)
+
 import webview
 import html
 import ast
