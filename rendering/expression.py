@@ -270,10 +270,10 @@ def render_comprehension_generator(parent: Element, node: ast.comprehension) -> 
     # TODO: support conditions in comprehensions
     assert len(node.ifs) == 0
 
-    elt = add_node(parent, node, "for-prefix in-sep row gap")
+    elt = add_node(parent, node, "for-prefix in-sep row gap bg-red")
     # need a wrapper (row gap is the interaction with the in suffix) for in-sep
-    target = render(add(elt, "row gap"), node.target)
-    it = render(elt, node.iter)
+    target = render(elt, node.target)
+    it = render(add(elt, "row gap"), node.iter)
     return elt
 
 
@@ -429,8 +429,8 @@ def render_constant(parent: Element, node: ast.Constant) -> Element:
 
 def render_attribute(parent: Element, node: ast.Attribute) -> Element:
     elt = add_node(parent, node, "attribute row dot-sep")
-    render(add(elt, "row"), node.value)
-    add(elt, text=node.attr)
+    render(elt, node.value)
+    add(add(elt, "row"), text=node.attr)
     return elt
 
 def render_subscript(parent: Element, node: ast.Subscript) -> Element:

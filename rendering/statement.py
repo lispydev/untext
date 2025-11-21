@@ -318,8 +318,8 @@ def render_for(parent: Element, node: ast.For) -> Element:
     header = add(elt, "row colon-suffix")
     prefixed = add(header, "for-prefix in-sep row gap")
     # separators like in-sep need an additional div (add(elt)) to add the separator as a suffix of this wrapper div
-    target = expression.render(add(prefixed, "row gap"), node.target)
-    iterator = expression.render(add(prefixed, "row"), node.iter)
+    target = expression.render(add(prefixed, ""), node.target)
+    iterator = expression.render(add(prefixed, "row gap"), node.iter)
 
     # TODO: WIP, debug later
     body = add(elt, "block")

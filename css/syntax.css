@@ -152,21 +152,21 @@
 .equal-sep > div + div::before {
 	content: "=";
 }
-.dot-sep > div:has(+ div)::after {
+.dot-sep > div + div::before {
 	content: ".";
 }
 
 /* keyword separators */
-.in-sep > div:has(+ div)::after {
+.in-sep > div + div::before {
 	content: "in";
 }
-.and-sep > div:has(+ div)::after {
+.and-sep > div + div::before {
 	content: "and";
 }
-.or-sep > div:has(+ div)::after {
+.or-sep > div + div::before {
 	content: "or";
 }
-.as-sep > div:has(+ div)::after {
+.as-sep > div + div::before {
 	content: "as";
 }
 
@@ -189,7 +189,8 @@ In the meantime, we still set the data-operator attribute on the .operation Elem
 /*.operation {
 	--operator: attr(data-operator);
 }*/
-.operation > div:has(+ div)::after {
+
+.operation > div + div::before {
   /*content: var(--operator);*/
   content: attr(data-operator);
 }
