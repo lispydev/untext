@@ -151,10 +151,10 @@ def render_assert(parent: Element, node: ast.Assert) -> Element:
 
 def render_import(parent: Element, node: ast.Import) -> Element:
     elt = add_node(parent, node, "import import-prefix row")
-    aliases = add(elt, "aliases row comma-sep gap")
+    aliases = add(elt, "aliases row comma-sep")
     for name in node.names:
         #comma_separated_item = add(aliases, "row")
-        render_alias(aliases, name)
+        render_alias(add(aliases, "row gap"), name)
     return elt
 
 # sub-part of import and importfrom nodes
@@ -181,9 +181,9 @@ def render_importfrom(parent: Element, node: ast.ImportFrom) -> Element:
     from_field = add_text(from_prefixed, node.module)
 
     import_prefixed = add(elt, "import-prefix row gap")
-    aliases = add(import_prefixed, "aliases row comma-sep gap")
+    aliases = add(import_prefixed, "aliases row comma-sep")
     for name in node.names:
-        render_alias(aliases, name)
+        render_alias(add(aliases, "row gap"), name)
     return elt
 
 
@@ -219,9 +219,9 @@ def render_parameters(parent: Element, node: ast.arguments) -> Element:
     # flags (*args and **kwargs)
     assert node.vararg is None
     assert node.kwarg is None
-    elt = add(parent, "comma-sep row gap")
+    elt = add(parent, "comma-sep row")
     for param in node.args:
-        comma_separated_item = add(elt, "row")
+        comma_separated_item = add(elt, "row gap")
         render_param(comma_separated_item, param)
     #result = ", ".join([render_arg(arg) for arg in node.args])
     #return result
@@ -255,11 +255,11 @@ def render_classdef(parent: Element, node: ast.ClassDef) -> Element:
     name = add(header_content, text=node.name)
     if node.keywords or node.bases:
         paren_wrapped = add(header_content, "parens row")
-        arguments = add(paren_wrapped, "comma-sep row gap")
+        arguments = add(paren_wrapped, "comma-sep row")
         for kwarg in node.keywords:
-            expression.render_keyword_arg(add(arguments, "row"), kwarg)
+            expression.render_keyword_arg(add(arguments, "row gap"), kwarg)
         for base in node.bases:
-            expression.render(add(arguments, "row"), base)
+            expression.render(add(arguments, "row gap"), base)
 
     body = add(elt, "block")
     for stmt in node.body:
@@ -274,13 +274,15 @@ def render_return(parent: Element, node: ast.Return) -> Element:
 
 def render_assign(parent: Element, node: ast.Assign) -> Element:
     assert node.type_comment is None
+    # TODO: support multiple targets
+    # example:
+    # a = b = 1
+    assert len(node.targets) == 1
     elt = add_node(parent, node, "row equal-sep gap")
     variables = add(elt, "row gap")
-    for t in node.targets:
-        expression.render(add(variables), t)
-    if len(node.targets) > 1:
-        variales.classes.append("parens comma-sep row gap")
-    value = add(elt)
+    #for t in node.targets:
+    expression.render(variables, node.targets[0])
+    value = add(elt, "row gap")
     expression.render(value, node.value)
     return
     #if len(targets) == 1:
@@ -298,9 +300,11 @@ def render_assign(parent: Element, node: ast.Assign) -> Element:
 def render_augassign(parent: Element, node: ast.AugAssign) -> Element:
     elt = add_node(parent, node, "row gap")
     target = expression.render(add(elt), node.target)
-    assign_operator = add(elt, "equal-sep")
-    add(assign_operator, "row", expression.read_binaryop(node.op))
-    add(assign_operator)
+    # hack: add an empty div to force the = separator to render
+    # TODO?: add a .equal-suffix css class
+    assign_operator = add(elt, "equal-sep row")
+    add(assign_operator, text=expression.read_binaryop(node.op))
+    add(assign_operator, "row")
     #op = expression.read_binaryop(node.op)
     #elt.classes.append(f"{op}-sep")
     val = expression.render(add(elt), node.value)

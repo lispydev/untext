@@ -146,14 +146,11 @@
 
 /* separators */
 
-/*.equal-sep {
-  gap: 5px;
-}*/
-.comma-sep > div:has(+ div)::after {
+.comma-sep > div + div::before {
 	content: ",";
 }
-.equal-sep > div:has(+ div)::after {
-  content: "=";
+.equal-sep > div + div::before {
+	content: "=";
 }
 .dot-sep > div:has(+ div)::after {
 	content: ".";

@@ -322,10 +322,10 @@ def render_call(parent: Element, node: ast.Call) -> Element:
     elt = add_node(parent, node, "call row")
     func = render(elt, node.func)
     args = add(elt, "parens row")
-    comma_separated = add(args, "comma-sep row gap")
+    comma_separated = add(args, "comma-sep row")
     # positional args
     for arg in node.args:
-        render(add(comma_separated, "row"), arg)
+        render(add(comma_separated, "row gap"), arg)
     # kwargs
     for kwarg in node.keywords:
         render_keyword_arg(add(comma_separated, "row"), kwarg)
