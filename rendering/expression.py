@@ -458,9 +458,9 @@ def render_name(parent: Element, node: ast.Name) -> Element:
 def render_list(parent: Element, node: ast.List) -> Element:
     assert isinstance(node.ctx, ast.Load)
     elt = add_node(parent, node, "brackets row")
-    comma_separated = add(elt, "comma-sep row gap")
+    comma_separated = add(elt, "comma-sep row")
     for x in node.elts:
-        comma_ended = add(comma_separated, "row")
+        comma_ended = add(comma_separated, "row gap")
         render(comma_ended, x)
     return elt
 
@@ -477,7 +477,7 @@ def render_tuple(parent: Element, node: ast.Tuple) -> Element:
         # empty element for the comma
         add(comma_separated)
     else:
-        comma_separated = add(elt, "comma-sep row gap")
+        comma_separated = add(elt, "comma-sep row")
         for x in node.elts:
-            render(add(comma_separated, "row"), x)
+            render(add(comma_separated, "row gap"), x)
     return elt
