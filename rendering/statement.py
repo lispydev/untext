@@ -68,10 +68,9 @@ def render(parent: Element, node: ast.stmt):
         case ast.Global:
             raise NotImplementedError("statement.render() not implemented for ast.Global")
         case ast.Nonlocal:
-            raise NotImplementedError("statement.render() not implemented for ast.Nonlocal")
+            return render_nonlocal(parent, node)
         case ast.Expr:
             return expression.render(parent, node.value)
-            #raise NotImplementedError("statement.render() not implemented for ast.Expr")
         case ast.Pass:
             return render_pass(parent, node)
         case ast.Break:
@@ -178,7 +177,9 @@ def render_parameters(parent: Element, node: ast.arguments) -> Element:
     assert len(node.posonlyargs) == 0
     assert len(node.kwonlyargs) == 0
     assert len(node.kw_defaults) == 0
-    assert len(node.defaults) == 0
+    if len(node.defaults) != 0:
+        print("TODO: argument defaults")
+        print(node.defaults)
     # flags (*args and **kwargs)
     assert node.vararg is None
     assert node.kwarg is None
@@ -193,7 +194,10 @@ def render_parameters(parent: Element, node: ast.arguments) -> Element:
 # sub-part of render_parameters
 def render_param(parent: Element, node: ast.arg) -> Element:
     # TODO: support argument type annotations
-    assert node.annotation is None
+    #assert node.annotation is None
+    if node.annotation is not None:
+        print("TODO: argument annotation")
+        print(node.annotation)
     assert node.type_comment is None
     # text metadata (not needed in a no-text IDE)
     #print(arg.lineno)
@@ -443,6 +447,14 @@ def render_withitem(parent: Element, node: ast.withitem) -> Element:
         unnamed = add(elt)
         expr = expression.render(unnamed, node.context_expr)
     return elt
+
+
+def render_nonlocal(parent: Element, node: ast.Nonlocal):
+    elt = add_node(parent, node, "row gap nonlocal-prefix")
+    names = add(elt, "row comma-sep")
+    for name in node.names:
+        add(names, "row gap", name)
+
 
 def render_pass(parent: Element, node: ast.Pass) -> Element:
     elt = add_node(parent, node, text="pass")

@@ -36,6 +36,10 @@
 	content: close-quote;
 }
 
+.star-prefix::before {
+	content: "*";
+}
+
 /* does not work */
 /*.triple-quotes::before {
 	content: open-quote open-quote open-quote;
@@ -81,9 +85,6 @@
 .with-prefix::before {
 	content: "with";
 }
-/*.with-prefix {
-	gap: 5px;
-}*/
 
 .import-prefix::before {
 	content: "import";
@@ -138,9 +139,10 @@
 	content: "class";
 }
 
-.star-prefix::before {
-	content: "*";
+.nonlocal-prefix::before {
+	content: "nonlocal";
 }
+
 
 
 

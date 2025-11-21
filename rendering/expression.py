@@ -26,7 +26,7 @@ def render(parent: Element, node: ast.expr):
         case ast.IfExp:
             return render_ifexp(parent, node)
         case ast.Dict:
-            raise NotImplementedError('expression.render() not implemented for ast.Dict')
+            return render_dict(parent, node)
         case ast.Set:
             raise NotImplementedError('expression.render() not implemented for ast.Set')
         case ast.ListComp:
@@ -253,6 +253,28 @@ def render_ifexp(parent: Element, node: ast.IfExp) -> Element:
     else_expr = render(else_part, node.orelse)
     return elt
 
+
+def render_dict(parent: Element, node: ast.Dict):
+    # TODO: multi-line rendering:
+    # ... {
+    #     ....
+    # }
+    # for now: render on a single line
+    # TODO:
+    elt = add_node(parent, node, "row braces")
+    items = add(elt, "comma-sep")
+    print(node.keys)
+    print(node.values)
+    for i in range(len(node.keys)):
+        k = node.keys[i]
+        # TODO: None is for **d unpacking
+        assert k is not None
+        v = node.values[i]
+        key = add(items, "row colon-suffix")
+        expression.render(key)
+        value = add(items)
+        expression.render(value, v)
+        print(k, v)
 
 def render_list_comprehension(parent: Element, node: ast.ListComp) -> Element:
     elt = add_node(parent, node, "brackets row")

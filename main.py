@@ -40,10 +40,10 @@ from rendering import statement, expression
 
 
 def on_load():
-    win_main = CodeWindow("main.py")
     # TODO: test with more code examples
-    #win_test = CodeWindow("pytest.py")
-    #win_dom = CodeWindow("rendering/dom.py")
+    win_dom = CodeWindow("rendering/dom.py")
+    win_main = CodeWindow("main.py")
+    win_test = CodeWindow("pytest.py")
     #win_expr = CodeWindow("rendering/expression.py")
     #win_stmt = CodeWindow("rendering/statement.py")
 
@@ -113,6 +113,9 @@ def render_statement(node):
         val = render_expr(node.value)
         return f"{targ} {op}= {val}"
     elif isinstance(node, ast.ClassDef):
+        # TODO:
+        return ""
+    elif isinstance(node, ast.Nonlocal):
         # TODO:
         return ""
     else:
@@ -383,7 +386,9 @@ def render_arguments(node):
     assert len(node.posonlyargs) == 0
     assert len(node.kwonlyargs) == 0
     assert len(node.kw_defaults) == 0
-    assert len(node.defaults) == 0
+    if len(node.defaults) != 0:
+        print("TODO: argument defaults")
+        print(node.defaults)
     # flags (*args and **kwargs)
     # TODO: support this instead of ignoring it
     #assert node.vararg is None
@@ -391,7 +396,9 @@ def render_arguments(node):
     return result
 def render_arg(arg):
     # TODO: support argument type annotations
-    assert arg.annotation is None
+    if arg.annotation is not None:
+        print("TODO: argument annotation")
+        print(arg.annotation)
     assert arg.type_comment is None
     # text metadata (not needed in a no-text IDE)
     #print(arg.lineno)
@@ -522,8 +529,8 @@ def render_expr(node):
         if_expr = render_expr(node.body)
         else_expr = render_expr(node.orelse)
         return f"{if_expr} if {test} else {else_expr}"
-    #elif isinstance(node, ast.Dict):
-    #    return "<span style='color: red'>TODO</span> "
+    elif isinstance(node, ast.Dict):
+        return "<span style='color: red'>TODO</span> "
     #elif isinstance(node, ast.Set):
     #    return "<span style='color: red'>TODO</span> "
     elif isinstance(node, ast.ListComp):
