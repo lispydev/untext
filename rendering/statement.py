@@ -177,16 +177,21 @@ def render_parameters(parent: Element, node: ast.arguments) -> Element:
     assert len(node.posonlyargs) == 0
     assert len(node.kwonlyargs) == 0
     assert len(node.kw_defaults) == 0
-    if len(node.defaults) != 0:
-        print("TODO: argument defaults")
-        print(node.defaults)
+    # default values are for the last parameters
+    # need to match argument names to default values with indices
+    default_padding = len(node.args) - len(node.defaults)
     # flags (*args and **kwargs)
     assert node.vararg is None
     assert node.kwarg is None
     elt = add(parent, "comma-sep row")
-    for param in node.args:
+    for i, param in enumerate(node.args):
         comma_separated_item = add(elt, "row gap")
-        render_param(comma_separated_item, param)
+        if i >= default_padding:
+            param_elt = add(comma_separated_item, "equal-sep row gap")
+            render_param(param_elt, param)
+            expression.render(add(param_elt, "row gap"), node.defaults[i - default_padding])
+        else:
+            render_param(comma_separated_item, param)
     #result = ", ".join([render_arg(arg) for arg in node.args])
     #return result
     return elt

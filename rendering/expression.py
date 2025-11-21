@@ -254,6 +254,7 @@ def render_ifexp(parent: Element, node: ast.IfExp) -> Element:
     return elt
 
 
+# TODO: test with more kinds of literals
 def render_dict(parent: Element, node: ast.Dict):
     # TODO: multi-line rendering:
     # ... {
@@ -263,8 +264,6 @@ def render_dict(parent: Element, node: ast.Dict):
     # TODO:
     elt = add_node(parent, node, "row braces")
     items = add(elt, "comma-sep")
-    print(node.keys)
-    print(node.values)
     for i in range(len(node.keys)):
         k = node.keys[i]
         # TODO: None is for **d unpacking
@@ -274,7 +273,7 @@ def render_dict(parent: Element, node: ast.Dict):
         expression.render(key)
         value = add(items)
         expression.render(value, v)
-        print(k, v)
+
 
 def render_list_comprehension(parent: Element, node: ast.ListComp) -> Element:
     elt = add_node(parent, node, "brackets row")

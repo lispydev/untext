@@ -386,9 +386,9 @@ def render_arguments(node):
     assert len(node.posonlyargs) == 0
     assert len(node.kwonlyargs) == 0
     assert len(node.kw_defaults) == 0
+    # TODO: implement in the static renderer (implemented in the dynamic renderer)
     if len(node.defaults) != 0:
-        print("TODO: argument defaults")
-        print(node.defaults)
+        pass
     # flags (*args and **kwargs)
     # TODO: support this instead of ignoring it
     #assert node.vararg is None
