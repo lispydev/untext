@@ -1,7 +1,7 @@
-# Pyde
+# Untext
 
-Pyde is a textless Python IDE built in Python.
+Untext is a textless Python *interactive* development environment built in Python.
 
-Unlike other IDEs, pyde does not include a text editor, and goes straigth to theAST layer for syntax-aware editing.
+Unlike other IDEs, untext does not include a text editor, and goes straigth to the AST layer for syntax-aware editing capabilities.
 
-Pyde uses a webview to render the UI from Python, with css to bridge the gap between AST attributes and readable code on the screen.
+Untext uses a webview to render the UI from Python, with css to bridge the gap between AST attributes and readable code on the screen.
