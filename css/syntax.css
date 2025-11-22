@@ -163,6 +163,12 @@
 .dot-sep > div + div::before {
 	content: ".";
 }
+.return-type-arrow-sep > div + div::before {
+	content: "->";
+}
+.colon-sep > div + div::before {
+	content: ":";
+}
 
 /* keyword separators */
 .in-sep > div + div::before {
@@ -176,9 +182,6 @@
 }
 .as-sep > div + div::before {
 	content: "as";
-}
-.return-type-arrow-sep > div + div::before {
-	content: "->";
 }
 
 

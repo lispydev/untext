@@ -70,7 +70,7 @@ def render(parent: Element, node: ast.expr):
         case ast.Tuple:
             return render_tuple(parent, node)
         case ast.Slice:
-            raise NotImplementedError('expression.render() not implemented for ast.Slice')
+            return render_slice(parent, node)
         case default:
             raise ValueError(f"Unexpected ast expression type: {type(node)}")
 
@@ -503,4 +503,19 @@ def render_tuple(parent: Element, node: ast.Tuple) -> Element:
         comma_separated = add(elt, "comma-sep row")
         for x in node.elts:
             render(add(comma_separated, "row gap"), x)
+    return elt
+
+
+def render_slice(parent: Element, node: ast.Slice):
+    elt = add_node(parent, node)
+    colon_split = add(elt, "row colon-sep")
+    left = add(colon_split, "row")
+    if node.lower is not None:
+        render(left, node.lower)
+    center = add(colon_split, "row")
+    if node.upper is not None:
+        render(center, node.upper)
+    if node.step is not None:
+        right = add(colon_split, "row")
+        render(right, node.step)
     return elt
