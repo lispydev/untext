@@ -44,7 +44,7 @@ def on_load():
     win_expr = CodeWindow("rendering/expression.py")
     win_dom = CodeWindow("rendering/dom.py")
     win_main = CodeWindow("main.py")
-    win_test = CodeWindow("pytest.py")
+    win_test = CodeWindow("webview_test.py")
 
     win_stmt = CodeWindow("rendering/statement.py")
 
