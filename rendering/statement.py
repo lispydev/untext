@@ -49,7 +49,7 @@ def render(parent: Element, node: ast.stmt):
             raise NotImplementedError("statement.render() not implemented for ast.AsyncWith")
 
         case ast.Match:
-            raise NotImplementedError("statement.render() not implemented for ast.Match")
+            return render_match(parent, node)
 
         case ast.Raise:
             return render_raise(parent, node)
@@ -95,6 +95,62 @@ def render_module(parent: Element, node: ast.Module) -> Element:
 """
 AST statement node rendering
 """
+
+def render_match(parent: Element, node: ast.Match):
+    elt = add_node(parent, node, "bg-red")
+    header = add(elt)
+    colon_suffix = add(header, "colon-suffix row")
+    match_prefix = add(colon_suffix, "match-prefix row gap")
+    matched_value = expression.render(match_prefix, node.subject)
+
+    cases = add(elt, "block")
+    for case in node.cases:
+        render_case(cases, case)
+
+    return elt
+
+# part of render_match
+def render_case(parent: Element, node: ast.match_case):
+    # TODO: support more cases
+    assert node.guard is None
+    elt = add_node(parent, node)
+    header = add(elt, "row colon-suffix")
+    content = add(header, "row gap case-prefix")
+    # turns out match patterns are not actually expressions,
+    # despite having the same syntax
+    render_pattern(content, node.pattern)
+
+    body = add(elt, "block")
+    for stmt in node.body:
+        render(body, stmt)
+
+def render_pattern(parent: Element, node: ast.pattern):
+    match type(node):
+        case ast.MatchValue:
+            return render_match_value(parent, node)
+        case ast.MatchSingleton:
+            return render_match_singleton(parent, node)
+        case ast.MatchSequence:
+            return render_match_sequence(parent, node)
+        case ast.MatchMapping:
+            return render_match_mapping(parent, node)
+        case ast.MatchClass:
+            return render_match_class(parent, node)
+
+        case ast.MatchStar:
+            return render_match_star(parent, node)
+
+        case ast.MatchAs:
+            return render_match_as(parent, node)
+        case ast.MatchOr:
+            return render_match_or(parent, node)
+
+        case default:
+            raise ValueError(f"Unexpected match pattern type: {type(node)}")
+
+
+
+
 
 def render_raise(parent: Element, node: ast.Raise) -> Element:
     # TODO: check if support for this attribute is needed

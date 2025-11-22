@@ -143,6 +143,12 @@
 	content: "nonlocal";
 }
 
+.match-prefix::before {
+	content: "match";
+}
+.case-prefix::before {
+	content: "case";
+}
 
 
 
