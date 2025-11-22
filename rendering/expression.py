@@ -175,36 +175,26 @@ def read_binaryop(op: ast.operator):
     elif isinstance(op, ast.Sub):
         return "-"
     elif isinstance(op, ast.Mult):
-        raise NotImplementedError(f"unknown binary operator: {op}")
-        pass
+        return "*"
     elif isinstance(op, ast.Div):
-        raise NotImplementedError(f"unknown binary operator: {op}")
         pass
     elif isinstance(op, ast.FloorDiv):
-        raise NotImplementedError(f"unknown binary operator: {op}")
         pass
     elif isinstance(op, ast.Mod):
-        raise NotImplementedError(f"unknown binary operator: {op}")
         pass
     elif isinstance(op, ast.Pow):
-        raise NotImplementedError(f"unknown binary operator: {op}")
         pass
     elif isinstance(op, ast.LShift):
-        raise NotImplementedError(f"unknown binary operator: {op}")
         pass
     elif isinstance(op, ast.RShift):
-        raise NotImplementedError(f"unknown binary operator: {op}")
         pass
     elif isinstance(op, ast.BitOr):
         return "|"
     elif isinstance(op, ast.BitXor):
-        raise NotImplementedError(f"unknown binary operator: {op}")
         pass
     elif isinstance(op, ast.BitAnd):
-        raise NotImplementedError(f"unknown binary operator: {op}")
         pass
     elif isinstance(op, ast.MatMult):
-        raise NotImplementedError(f"unknown binary operator: {op}")
         pass
     raise NotImplementedError(f"unknown binary operator: {op}")
 

@@ -469,7 +469,7 @@ def render_binaryop(op):
     elif isinstance(op, ast.Sub):
         return "-"
     elif isinstance(op, ast.Mult):
-        pass
+        return "*"
     elif isinstance(op, ast.Div):
         pass
     elif isinstance(op, ast.FloorDiv):
