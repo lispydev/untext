@@ -11,7 +11,7 @@ Untext uses a webview to render the UI from Python, with css to bridge the gap b
 
 Untext is still in development.
 
-To try it now, you need the pywebview library installed.
+To try it now, you need the [pywebview](https://pywebview.flowrl.com/) library installed.
 
 On debian, you can install all the dependencies with:
 ```sh
