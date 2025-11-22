@@ -341,7 +341,7 @@ def render_call(parent: Element, node: ast.Call) -> Element:
         render(add(comma_separated, "row gap"), arg)
     # kwargs
     for kwarg in node.keywords:
-        render_keyword_arg(add(comma_separated, "row"), kwarg)
+        render_keyword_arg(add(comma_separated, "row gap"), kwarg)
         #eq_separated = add(comma_separated, "equal-sep row")
         #kw = add(eq_separated, text=kwarg.arg)
         #render(eq_separated, kwarg.value)
@@ -350,12 +350,13 @@ def render_call(parent: Element, node: ast.Call) -> Element:
 # part of render_call(), also used by statement.render_class()
 def render_keyword_arg(parent: Element, node: ast.keyword) -> Element:
     elt = add_node(parent, node, "equal-sep row")
-    # TODO: use a wrapper for "row" ?
+    # TODO: use a wrapper for "row"
     # not needed here because there is only text,
     # but .equal-sep adds a ::before text content
     # and using a wrapper div would unify the DOM conventions with the rest of the code
     kw = add(elt, "row", text=node.arg)
-    render(elt, node.value)
+    val = add(elt, "row")
+    render(val, node.value)
     return elt
 
 def render_formatted_value(parent: Element, node: ast.FormattedValue) -> Element:

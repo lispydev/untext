@@ -16,6 +16,13 @@ div {
 /* minimal utility classes */
 .row {
   flex-direction: row;
+  /* force strings to be on a single line with no line returns
+   * (without this setting, string literals do not match their value)
+   *
+   * can make the body larger than the screen size
+   * the default div flex behavior also does not seem to wrap rows
+   * */
+  white-space: nowrap;
 }
 
 .gap {
