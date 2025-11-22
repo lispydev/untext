@@ -729,7 +729,6 @@ class CodeWindow:
 
 # TODO: find a way to start the IDE exactly once per "r" key press
 # if __name__ == "__main__":
-webview.create_window("docs", "https://pywebview.flowrl.com")
 print("starting")
 webview.start(on_load)
 
