@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "untext"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
   { name="Yacine Cheikhrouhou", email="yacine.cheikhrouhou@yahoo.fr" },
 ]
@@ -29,19 +29,29 @@ classifiers = [
 license = "Apache-2.0"
 license-files = ["LICEN[CS]E*"]
 dependencies = [
-  "pywebview>5.0.5"
+  "pywebview>=5.0.5"
 ]
 
 [project.urls]
 Homepage = "https://github.com/lispydev/untext"
 #Issues = "https://github.com/lispydev/untext/issues"
 
-[tool.hatch.build]
+# this config makes the untext package globally importable
+# (by default, src is made importable instead)
+[tool.hatch.build.targets.wheel]
 packages = ["src/untext"]
-include = [
-  "src/**/*.py",
-  "src/**/*.css",
-]
+
+# sdist (source distribution) is the .tar.gz archive generated in dist/
+# .gitignored files are implicitely excluded by hatchling
+# this config excludes everything outside of src/
+[tool.hatch.build.targets.sdist]
+only-include = ["src/untext"]
+# TODO: see if this is better (avoids accidentally shipping unrelated files)
+#include = [
+#  "src/**/*.py",
+#  "src/**/*.css",
+#]
 #exclude = [
 #  "*.pyc",
 #]
+
