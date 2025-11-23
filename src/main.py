@@ -40,10 +40,10 @@ from rendering import statement, expression
 
 
 def on_load():
+    win_main.load()
     # TODO: test with more code examples
     win_expr = CodeWindow("rendering/expression.py")
     win_dom = CodeWindow("rendering/dom.py")
-    win_main = CodeWindow("main.py")
     win_test = CodeWindow("webview_test.py")
 
     win_stmt = CodeWindow("rendering/statement.py")
@@ -666,7 +666,7 @@ def render_comprehension(node):
 
 
 class CodeWindow:
-    def __init__(self, filepath):
+    def __init__(self, filepath, load=True):
         self.path = filepath
         with open(self.path) as f:
             self.source = f.read()
@@ -712,10 +712,14 @@ class CodeWindow:
         self.api = CodeWindowAPI()
         self.window = webview.create_window(self.module_name, html=self.html, js_api=self.api)
 
-        # this part needs pywebview to be started in order to run
-        # (will freeze if not started)
+        if load:
+            self.load()
 
-        # inject css into the code viewer
+
+    # must be called after webview.start()
+    # (load_css, evaluate_js and dom manipulation cannot be done before opening the window)
+    def load(self):
+        # inject css into the window and load the html
         for name in ["css/style.css", "css/syntax.css"]:
             with open(name) as f:
                 css = f.read()
@@ -727,8 +731,9 @@ class CodeWindow:
 
 
 
-# TODO: find a way to start the IDE exactly once per "r" key press
+
 # if __name__ == "__main__":
+win_main = CodeWindow("main.py", load=False)
 print("starting")
 webview.start(on_load)
 
