@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "untext"
-version = "0.0.3"
+version = "0.0.4"
 authors = [
   { name="Yacine Cheikhrouhou", email="yacine.cheikhrouhou@yahoo.fr" },
 ]
@@ -35,6 +35,9 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/lispydev/untext"
 #Issues = "https://github.com/lispydev/untext/issues"
+
+[project.scripts]
+untext = "untext.main:main"
 
 # this config makes the untext package globally importable
 # (by default, src is made importable instead)

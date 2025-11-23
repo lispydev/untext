@@ -732,9 +732,11 @@ class CodeWindow:
 
 
 
-# if __name__ == "__main__":
-win_main = CodeWindow("main.py", load=False)
-print("starting")
-webview.start(on_load)
+def main():
+    win_main = CodeWindow("main.py", load=False)
+    print("starting")
+    webview.start(on_load)
 
+if __name__ == "__main__":
+    main()
 
