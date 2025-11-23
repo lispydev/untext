@@ -1,0 +1,46 @@
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "untext"
+version = "0.0.1"
+authors = [
+  { name="Yacine Cheikhrouhou", email="yacine.cheikhrouhou@yahoo.fr" },
+]
+description = "a textless Python IDE, that operates at the AST level"
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    # defaults
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+
+    # added:
+    # apache license
+    "License :: OSI Approved :: Apache Software License",
+    # works on pypy
+    "Programming Language :: Python :: Implementation :: PyPy",
+    # IDE
+    "Topic :: Text Editors :: Integrated Development Environments (IDE)",
+    # for devs
+    "Intended Audience :: Developers",
+]
+license = "Apache-2.0"
+license-files = ["LICEN[CS]E*"]
+dependencies = [
+  "pywebview>5.0.5"
+]
+
+[project.urls]
+Homepage = "https://github.com/lispydev/untext"
+#Issues = "https://github.com/lispydev/untext/issues"
+
+[tool.hatch.build]
+include = [
+  "src/**/*.py",
+  "src/**/*.css",
+]
+#exclude = [
+#  "*.pyc",
+#]
