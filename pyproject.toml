@@ -37,6 +37,7 @@ Homepage = "https://github.com/lispydev/untext"
 #Issues = "https://github.com/lispydev/untext/issues"
 
 [tool.hatch.build]
+packages = ["src/untext"]
 include = [
   "src/**/*.py",
   "src/**/*.css",
