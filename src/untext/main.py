@@ -5,6 +5,7 @@ TODO: refactor html generation
 TODO: write helpers for body generation
 """
 
+# TODO: write tests
 #print(1 < 3 < 5)
 
 import webview
@@ -13,6 +14,10 @@ import ast
 import sys
 import code
 import os
+
+# used to load css files in the python import path
+from importlib import resources
+
 #import multiprocessing
 #import marshal
 # force=True: do it even in the child process (otherwise, a RuntimeError is raised)
@@ -26,17 +31,17 @@ import os
 
 from types import ModuleType
 
-# test import
-import rendering.statement as statement, rendering.expression as expression
+# test import, needed for exhaustiveness
+import untext.rendering.statement as statement, untext.rendering.expression as expression
 def f(a, b):
     pass
 
-from rendering import dom
-from rendering.dom import div_old as div, block
+from untext.rendering import dom
+from untext.rendering.dom import div_old as div, block
 
 #import rendering.statement, rendering.expression
 
-from rendering import statement, expression
+from untext.rendering import statement, expression
 
 
 
@@ -711,9 +716,10 @@ class CodeWindow:
     # (load_css, evaluate_js and dom manipulation cannot be done before opening the window)
     def load(self):
         # inject css into the window and load the html
-        for name in ["css/style.css", "css/syntax.css"]:
-            with open(name) as f:
-                css = f.read()
+        for name in ["style.css", "syntax.css"]:
+            css = resources.files("untext.css").joinpath(name).read_text()
+            #with open(name) as f:
+            #    css = f.read()
             self.window.load_css(css)
         self.window.evaluate_js(self.api.js_init)
         self.root = self.window.dom.create_element("<div id='root'></div>")
@@ -724,19 +730,27 @@ class CodeWindow:
 
 
 def main():
+    # open files listed in sys.argv
+    windows = []
+    for path in sys.argv[1:]:
+        print(path)
+        if not os.path.exists(path):
+            # create the file
+            with open(path, "x"):
+                pass
+        windows.append(CodeWindow(path, load=False))
+
     def on_load():
-        win_main.load()
-        # TODO: test with more code examples
-        win_expr = CodeWindow("rendering/expression.py")
-        win_dom = CodeWindow("rendering/dom.py")
-        win_test = CodeWindow("webview_test.py")
+        for win in windows:
+            win.load()
 
-        win_stmt = CodeWindow("rendering/statement.py")
+    if not windows:
+        print("Usage: untext <file1> <file2>")
+        sys.exit(0)
 
-
-    win_main = CodeWindow("main.py", load=False)
     print("starting")
     webview.start(on_load)
+
 
 if __name__ == "__main__":
     main()

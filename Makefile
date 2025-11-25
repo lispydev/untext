@@ -1,5 +1,4 @@
-.PHONY: build push testpush testinstall_local testfetch clean-tests
-
+.PHONY: build push testpush test_wheel_local test_wheel test_wheel_prod clean-tests
 
 # build a wheel (.whl) and an sdist (source dist, .tar.gz) in ./dist/
 build:
