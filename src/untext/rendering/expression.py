@@ -280,13 +280,18 @@ def render_list_comprehension(parent: Element, node: ast.ListComp) -> Element:
 def render_comprehension_generator(parent: Element, node: ast.comprehension) -> Element:
     # TODO: support async
     assert node.is_async == 0
-    # TODO: support conditions in comprehensions
-    assert len(node.ifs) == 0
 
-    elt = add_node(parent, node, "for-prefix in-sep row gap")
+    elt = add_node(parent, node, "for-prefix row gap")
     # need a wrapper (row gap is the interaction with the in suffix) for in-sep
-    target = render(elt, node.target)
-    it = render(add(elt, "row gap"), node.iter)
+    generator = add(elt, "in-sep row gap")
+    target = render(add(generator, "row gap"), node.target)
+    it = render(add(generator, "row gap"), node.iter)
+
+    conditions = add(elt, "row gap")
+    for cond in node.ifs:
+        condition = add(conditions, "if-prefix row gap")
+        render(condition, cond)
+
     return elt
 
 
