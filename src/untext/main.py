@@ -675,7 +675,22 @@ class Project:
 
     # TODO: remove the load parameter
     def open(self, filepath, load=True):
+        # parse the path
+        absolute_path = os.path.abspath(filepath)
+        common_part = os.path.commonpath([self.path, absolute_path])
+        # TODO: improve error handling (user facing error)
+        if common_part != self.path:
+            raise ValueError(f"Cannot open {filepath}, as the file is not in the {self.path} project directory")
+        assert absolute_path.startswith(common_part)
+        relative_path = os.path.relpath(absolute_path, self.path) #absolute_path[len(common_part):]
+        print("stripped path:")
+        print(relative_path)
+        directory, filename = os.path.split(relative_path)
+        print("directory:", directory)
+        print("filename:", filename)
+
         self.windows.append(CodeWindow(self, filepath, load=load))
+
 
     # TODO: find a better way to deal with the pywebview constraint of
     # having to open a window before loading css or js
@@ -685,25 +700,9 @@ class Project:
     #        w.load()
 
 class CodeWindow:
-    def parse_path(self, filepath):
-        project_root = os.path.abspath(os.getcwd())
-        abs_filepath = os.path.abspath(filepath)
-        common_part = os.path.commonpath([project_root, abs_filepath])
-        if common_part != project_root:
-            print("project root:", project_root)
-            print("filepath:", abs_filepath)
-            print("file is not in the current project. Imports will fail unless the project containing this file is added to sys.path.")
-            return False
-        directory, filename = os.path.split(filepath)
-
-        print(project_root)
-        print(directory)
-        print(filename)
-
     def __init__(self, project, filepath, load=True):
         self.project = project
         self.path = filepath
-        self.parse_path(filepath)
         with open(self.path) as f:
             self.source = f.read()
         self.module_name = os.path.basename(filepath)
