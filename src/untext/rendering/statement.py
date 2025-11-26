@@ -23,7 +23,7 @@ def render(parent: Element, node: ast.stmt):
             return render_return(parent, node)
 
         case ast.Delete:
-            raise NotImplementedError("statement.render() not implemented for ast.Delete")
+            return render_delete(parent, node)
         case ast.Assign:
             return render_assign(parent, node)
         # 3.12+ feature
@@ -323,6 +323,16 @@ def render_return(parent: Element, node: ast.Return) -> Element:
     if node.value is not None:
         expression.render(elt, node.value)
     return elt
+
+
+def render_delete(parent: Element, node: ast.Delete):
+    elt = add_node(parent, node)
+    del_prefixed = add(elt, "del-prefix row gap")
+    elts = add(del_prefixed, "comma-sep row")
+    for target in node.targets:
+        item = add(elts, "row gap")
+        expression.render(item, target)
+
 
 def render_assign(parent: Element, node: ast.Assign) -> Element:
     assert node.type_comment is None

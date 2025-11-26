@@ -150,6 +150,10 @@
 	content: "case";
 }
 
+.del-prefix::before {
+	content: "del";
+}
+
 
 
 /* separators */
