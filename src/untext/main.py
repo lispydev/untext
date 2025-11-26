@@ -117,6 +117,9 @@ def render_statement(node):
     elif isinstance(node, ast.Match):
         # TODO:
         return ""
+    elif isinstance(node, ast.Delete):
+        # TODO:
+        return ""
     else:
         raise NotImplementedError(type(node))
 
@@ -654,16 +657,53 @@ def render_comprehension(node):
     # TODO: support async
     assert node.is_async == 0
     # TODO: support conditions in comprehensions
-    assert len(node.ifs) == 0
+    # TODO: implement in the dynamic renderer for now
+    if len(node.ifs) > 0:
+        pass
+    #assert len(node.ifs) == 0
     #ifs = [render_expr(x) for x in node.ifs]
     #print(ifs)
     return f"{target} in {it}"
 
 
 
+class Project:
+    def __init__(self, project_root):
+        self.path = os.path.abspath(project_root)
+
+        self.windows = []
+
+    # TODO: remove the load parameter
+    def open(self, filepath, load=True):
+        self.windows.append(CodeWindow(self, filepath, load=load))
+
+    # TODO: find a better way to deal with the pywebview constraint of
+    # having to open a window before loading css or js
+
+    #def load_windows(self):
+    #    for w in self.windows:
+    #        w.load()
+
 class CodeWindow:
-    def __init__(self, filepath, load=True):
+    def parse_path(self, filepath):
+        project_root = os.path.abspath(os.getcwd())
+        abs_filepath = os.path.abspath(filepath)
+        common_part = os.path.commonpath([project_root, abs_filepath])
+        if common_part != project_root:
+            print("project root:", project_root)
+            print("filepath:", abs_filepath)
+            print("file is not in the current project. Imports will fail unless the project containing this file is added to sys.path.")
+            return False
+        directory, filename = os.path.split(filepath)
+
+        print(project_root)
+        print(directory)
+        print(filename)
+
+    def __init__(self, project, filepath, load=True):
+        self.project = project
         self.path = filepath
+        self.parse_path(filepath)
         with open(self.path) as f:
             self.source = f.read()
         self.module_name = os.path.basename(filepath)
@@ -689,8 +729,14 @@ class CodeWindow:
 
             def keydown(_, key):
                 if key == "r":
+                    print("before:")
+                    print(unknowns())
+                    #print(sys.modules.keys())
                     bytecode = compile(self.tree, "<ast>", "exec")
                     exec(bytecode, self.module.__dict__)
+                    print("after:")
+                    #print(sys.modules.keys())
+                    print(unknowns())
                     #def f():
                     #    print(os.getpid())
                     #    print(os.getppid())
@@ -727,24 +773,41 @@ class CodeWindow:
         statement.render_module(self.root, self.tree)
 
 
+# TODO: remove (used for debug message clarity)
+known_modules = []
+
+def unknowns():
+    keys = [k for k in sys.modules.keys() if k not in known_modules]
+    return keys
 
 
 def main():
     # open files listed in sys.argv
-    windows = []
+    main_project = Project(os.getcwd())
+    #windows = []
     for path in sys.argv[1:]:
         print(path)
         if not os.path.exists(path):
             # create the file
             with open(path, "x"):
                 pass
-        windows.append(CodeWindow(path, load=False))
+        main_project.open(path, load=False)
 
     def on_load():
-        for win in windows:
+        # TODO: get rid of this step by starting pywebview before opening code windows or by using the static renderer first
+        for win in main_project.windows:
             win.load()
 
-    if not windows:
+        # erase sys.modules
+        # untext itself will not import anything more,
+        # the next imports will be made by the user
+        for x in list(sys.modules.keys()):
+            known_modules.append(x)
+            #del sys.modules[x]
+        print(unknowns()) #sys.modules.keys())
+        print(sys.path)
+
+    if not main_project.windows:
         print("Usage: untext <file1> <file2>")
         sys.exit(0)
 
