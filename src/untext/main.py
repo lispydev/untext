@@ -717,7 +717,8 @@ class CodeWindow:
             self.source = f.read()
         self.module_path = ".".join(path_parts)
         #print(self.module_path)
-        self.module = ModuleType(self.module_path)
+        self.loaded = False
+        self.module = None
         
         # use correct namespaces for packages to allow non-root imports
         # (actually not needed, days of wasted research)
@@ -780,6 +781,12 @@ class CodeWindow:
                     #print(sys.modules["untext.rendering.expression"])
                     #print(sys.modules["untext.rendering.dom"])
                     #print(sys.modules["untext.pkg"])
+                    if not self.loaded:
+                        if self.module_path in sys.modules:
+                            self.module = sys.modules[self.module_path]
+                        else:
+                            self.module = ModuleType(self.module_path)
+                        self.loaded = True
                     bytecode = compile(self.tree, "<ast>", "exec")
                     exec(bytecode, self.module.__dict__)
                     sys.modules[self.module_path] = self.module
@@ -797,6 +804,7 @@ class CodeWindow:
                     #p.join()
                     #exec(bytecode, self.module.__dict__)
                 elif key == "s":
+                    self.refresh_module()
                     # start an REPL in the current module
                     code.InteractiveConsole(locals=self.module.__dict__).interact()
                 print(key)
@@ -806,6 +814,15 @@ class CodeWindow:
 
         if load:
             self.load()
+
+
+    # if the module was already imported in other places,
+    # but never reloaded by the user,
+    # pull the sys.modules entry and use it as the module
+    def refresh_module(self):
+        if not self.loaded and self.module_path in sys.modules:
+            self.module = sys.modules[self.module_path]
+            self.loaded = True
 
 
     # must be called after webview.start()
@@ -824,13 +841,13 @@ class CodeWindow:
 
 
 # TODO: remove (used for debug message clarity)
-from untext.pkg_list import known as known_modules
+#from untext.pkg_list import known as known_modules
 #known_modules = []
 #fake_modules = []
 
-def unknowns():
-    keys = [k for k in sys.modules.keys() if k not in known_modules]
-    return keys
+#def unknowns():
+#    keys = [k for k in sys.modules.keys() if k not in known_modules]
+#    return keys
 
 
 
