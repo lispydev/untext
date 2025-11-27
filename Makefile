@@ -1,4 +1,12 @@
-.PHONY: build push testpush test_wheel_local test_wheel test_wheel_prod clean-tests
+.PHONY: build_prepare build push testpush test_wheel_local test_wheel test_wheel_prod clean-tests
+
+# prepare a build environment
+# build: builds wheel and sdist output
+# twine: upload to pypi
+# mypy (and system packages): static analysis
+build_prepare:
+	python3 -m venv build_venv --system-site-packages
+	./build_venv/bin/pip install -r build_requirements.txt
 
 # build a wheel (.whl) and an sdist (source dist, .tar.gz) in ./dist/
 build:
