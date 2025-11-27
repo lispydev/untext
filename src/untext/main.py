@@ -8,6 +8,9 @@ TODO: write helpers for body generation
 # TODO: write tests
 #print(1 < 3 < 5)
 
+# TODO: remove (used for import debugging)
+#import untext.pkg
+
 import webview
 import html
 import ast
@@ -30,6 +33,7 @@ from importlib import resources
 
 
 from types import ModuleType
+#from importlib.machinery import ModuleSpec
 
 # test import, needed for exhaustiveness
 import untext.rendering.statement as statement, untext.rendering.expression as expression
@@ -683,13 +687,17 @@ class Project:
             raise ValueError(f"Cannot open {filepath}, as the file is not in the {self.path} project directory")
         assert absolute_path.startswith(common_part)
         relative_path = os.path.relpath(absolute_path, self.path) #absolute_path[len(common_part):]
-        print("stripped path:")
-        print(relative_path)
-        directory, filename = os.path.split(relative_path)
-        print("directory:", directory)
-        print("filename:", filename)
+        #print("stripped path:")
+        #print(relative_path)
+        path_parts = os.path.normpath(relative_path).split(os.sep)
+        module_name, ext = os.path.splitext(path_parts[-1])
+        #print("ext:", ext)
+        # TODO: improve error handling (user input)
+        assert ext == ".py"
+        path_parts[-1] = module_name
+        #print(path_parts)
 
-        self.windows.append(CodeWindow(self, filepath, load=load))
+        self.windows.append(CodeWindow(self, path_parts, load=load))
 
 
     # TODO: find a better way to deal with the pywebview constraint of
@@ -700,16 +708,51 @@ class Project:
     #        w.load()
 
 class CodeWindow:
-    def __init__(self, project, filepath, load=True):
+    def __init__(self, project, path_parts, load=True):
         self.project = project
-        self.path = filepath
-        with open(self.path) as f:
+        self.parent_packages = path_parts[:-1]
+        self.filename = path_parts[-1]
+        self.path = "/".join(path_parts)
+        with open(f"{self.path}.py") as f:
             self.source = f.read()
-        self.module_name = os.path.basename(filepath)
-        self.module = ModuleType(self.module_name)
+        self.module_path = ".".join(path_parts)
+        #print(self.module_path)
+        self.module = ModuleType(self.module_path)
         
-        # TODO: use correct namespaces for packages to allow non-root imports
-        sys.modules[filepath] = self.module
+        # use correct namespaces for packages to allow non-root imports
+        # (actually not needed, days of wasted research)
+
+        #if len(path_parts) > 1:
+        #    for i in range(len(path_parts) - 1):
+        #        parts = path_parts[0:i + 1]
+        #        pkg_path = ".".join(parts)
+        #        print(parts)
+        #        if pkg_path in sys.modules:
+        #            print(pkg_path, "found in sys.modules")
+        #        else:
+        #            pkg = ModuleType(pkg_path)
+        #            fs_path = os.path.abspath("/".join(parts))
+        #            pkg.__path__ = [fs_path]
+        #            # TODO: make the package a namespace if there is no __init__.py anywhere in the python path
+        #            # else, find what to do when there are more than one __init__.py package with the same name
+        #            # (preparing for these situations before they happen is better than debugging weird niche cases)
+
+        #            # TODO: see in personal notes how to completely fake a namespace (need to test for unneeded steps, but will work in python3.13)
+
+        #            #spec = ModuleSpec(
+        #            #    name=pkg_path,
+        #            #    loader=None,
+        #            #    is_package=True,
+        #            #)
+        #            #spec.submodule_search_locations = [fs_path]
+        #            #pkg.__spec__ = spec
+        #            #pkg.__file__ = None
+        #            #pkg.__loader__ = None
+        #            # TODO: can work without this ?
+        #            sys.modules[pkg_path] = pkg
+        #            print("created package", pkg_path, "at", fs_path)
+        #            print(pkg)
+        ##sys.modules[self.module_path] = self.module
 
         # TODO: use the new renderer
         self.tree = ast.parse(self.source)
@@ -728,14 +771,22 @@ class CodeWindow:
 
             def keydown(_, key):
                 if key == "r":
-                    print("before:")
-                    print(unknowns())
+                    #print("before:")
+                    #print(unknowns())
+                    #print(fake_modules)
                     #print(sys.modules.keys())
+                    #print(self.module)
+                    #print(sys.modules["untext.rendering"])
+                    #print(sys.modules["untext.rendering.expression"])
+                    #print(sys.modules["untext.rendering.dom"])
+                    #print(sys.modules["untext.pkg"])
                     bytecode = compile(self.tree, "<ast>", "exec")
                     exec(bytecode, self.module.__dict__)
-                    print("after:")
+                    sys.modules[self.module_path] = self.module
+                    #print("after:")
                     #print(sys.modules.keys())
-                    print(unknowns())
+                    #print(unknowns())
+                    #print(fake_modules)
                     #def f():
                     #    print(os.getpid())
                     #    print(os.getppid())
@@ -751,7 +802,7 @@ class CodeWindow:
                 print(key)
 
         self.api = CodeWindowAPI()
-        self.window = webview.create_window(self.module_name, html=self.html, js_api=self.api)
+        self.window = webview.create_window(self.module_path, html=self.html, js_api=self.api)
 
         if load:
             self.load()
@@ -773,11 +824,15 @@ class CodeWindow:
 
 
 # TODO: remove (used for debug message clarity)
-known_modules = []
+from untext.pkg_list import known as known_modules
+#known_modules = []
+#fake_modules = []
 
 def unknowns():
     keys = [k for k in sys.modules.keys() if k not in known_modules]
     return keys
+
+
 
 
 def main():
@@ -785,12 +840,14 @@ def main():
     main_project = Project(os.getcwd())
     #windows = []
     for path in sys.argv[1:]:
-        print(path)
+        #print(path)
         if not os.path.exists(path):
             # create the file
             with open(path, "x"):
                 pass
         main_project.open(path, load=False)
+
+    #fake_modules.extend(unknowns())
 
     def on_load():
         # TODO: get rid of this step by starting pywebview before opening code windows or by using the static renderer first
@@ -800,11 +857,14 @@ def main():
         # erase sys.modules
         # untext itself will not import anything more,
         # the next imports will be made by the user
-        for x in list(sys.modules.keys()):
-            known_modules.append(x)
+        #print("initial sys.modules entries:")
+        #print(sys.modules.keys())
+        #for x in list(sys.modules.keys()):
+        #    known_modules.append(x)
             #del sys.modules[x]
-        print(unknowns()) #sys.modules.keys())
-        print(sys.path)
+        #print(unknowns()) #sys.modules.keys())
+        #print(fake_modules)
+        #print(sys.path)
 
     if not main_project.windows:
         print("Usage: untext <file1> <file2>")
