@@ -8,9 +8,6 @@ TODO: write helpers for body generation
 # TODO: write tests
 #print(1 < 3 < 5)
 
-# TODO: remove (used for import debugging)
-#import untext.pkg
-
 import webview
 import html
 import ast
@@ -33,9 +30,8 @@ from importlib import resources
 
 
 from types import ModuleType
-#from importlib.machinery import ModuleSpec
 
-# test import, needed for exhaustiveness
+# test import, needed for exhaustiveness of the renderer (TODO: remove once we have automated regression tests for the renderer)
 import untext.rendering.statement as statement, untext.rendering.expression as expression
 def f(a, b):
     pass
@@ -677,35 +673,27 @@ class Project:
 
         self.windows = []
 
-    # TODO: remove the load parameter
+    # TODO: (someday) remove the load parameter and CodeWindow.load ?
     def open(self, filepath, load=True):
-        # parse the path
+        # parse and check the file path
         absolute_path = os.path.abspath(filepath)
         common_part = os.path.commonpath([self.path, absolute_path])
-        # TODO: improve error handling (user facing error)
+        # TODO: improve error handling (user input)
         if common_part != self.path:
             raise ValueError(f"Cannot open {filepath}, as the file is not in the {self.path} project directory")
         assert absolute_path.startswith(common_part)
         relative_path = os.path.relpath(absolute_path, self.path) #absolute_path[len(common_part):]
-        #print("stripped path:")
-        #print(relative_path)
         path_parts = os.path.normpath(relative_path).split(os.sep)
         module_name, ext = os.path.splitext(path_parts[-1])
-        #print("ext:", ext)
         # TODO: improve error handling (user input)
-        assert ext == ".py"
+        if ext != ".py":
+            raise ValueError(f"Cannot open {filepath}, as the file is not a python script")
         path_parts[-1] = module_name
-        #print(path_parts)
 
         self.windows.append(CodeWindow(self, path_parts, load=load))
 
 
-    # TODO: find a better way to deal with the pywebview constraint of
-    # having to open a window before loading css or js
 
-    #def load_windows(self):
-    #    for w in self.windows:
-    #        w.load()
 
 class CodeWindow:
     def __init__(self, project, path_parts, load=True):
@@ -716,20 +704,22 @@ class CodeWindow:
         with open(f"{self.path}.py") as f:
             self.source = f.read()
         self.module_path = ".".join(path_parts)
-        #print(self.module_path)
         self.loaded = False
         self.module = None
         
-        # use correct namespaces for packages to allow non-root imports
+        # create namespaces and packages to allow non-root imports without
+        # requiring actual directories on disk:
         # (actually not needed, days of wasted research)
 
+        # prepare packages for each step of the path to the current module
         #if len(path_parts) > 1:
         #    for i in range(len(path_parts) - 1):
         #        parts = path_parts[0:i + 1]
         #        pkg_path = ".".join(parts)
-        #        print(parts)
+        #        #print(parts)
         #        if pkg_path in sys.modules:
-        #            print(pkg_path, "found in sys.modules")
+        #            #print(pkg_path, "found in sys.modules")
+        #            pass
         #        else:
         #            pkg = ModuleType(pkg_path)
         #            fs_path = os.path.abspath("/".join(parts))
@@ -749,13 +739,13 @@ class CodeWindow:
         #            #pkg.__spec__ = spec
         #            #pkg.__file__ = None
         #            #pkg.__loader__ = None
-        #            # TODO: can work without this ?
+        #            # TODO: see if namespaces are actually useful or not
         #            sys.modules[pkg_path] = pkg
         #            print("created package", pkg_path, "at", fs_path)
         #            print(pkg)
         ##sys.modules[self.module_path] = self.module
 
-        # TODO: use the new renderer
+        # TODO: update the static renderer and skip the initial DOM rendering
         self.tree = ast.parse(self.source)
         self.html = render_module(self.tree)
 
@@ -772,15 +762,6 @@ class CodeWindow:
 
             def keydown(_, key):
                 if key == "r":
-                    #print("before:")
-                    #print(unknowns())
-                    #print(fake_modules)
-                    #print(sys.modules.keys())
-                    #print(self.module)
-                    #print(sys.modules["untext.rendering"])
-                    #print(sys.modules["untext.rendering.expression"])
-                    #print(sys.modules["untext.rendering.dom"])
-                    #print(sys.modules["untext.pkg"])
                     if not self.loaded:
                         if self.module_path in sys.modules:
                             self.module = sys.modules[self.module_path]
@@ -790,10 +771,9 @@ class CodeWindow:
                     bytecode = compile(self.tree, "<ast>", "exec")
                     exec(bytecode, self.module.__dict__)
                     sys.modules[self.module_path] = self.module
-                    #print("after:")
-                    #print(sys.modules.keys())
-                    #print(unknowns())
-                    #print(fake_modules)
+                    # multiprocessing attempt
+                    # breaks too much to be useful,
+                    # even if some codes like pywebview only work in the main thread
                     #def f():
                     #    print(os.getpid())
                     #    print(os.getppid())
@@ -830,9 +810,10 @@ class CodeWindow:
     def load(self):
         # inject css into the window and load the html
         for name in ["style.css", "syntax.css"]:
+            # css files must be searched in the
+            # python path with importlib,
+            # since they are bundled and installed with pip
             css = resources.files("untext.css").joinpath(name).read_text()
-            #with open(name) as f:
-            #    css = f.read()
             self.window.load_css(css)
         self.window.evaluate_js(self.api.js_init)
         self.root = self.window.dom.create_element("<div id='root'></div>")
@@ -840,48 +821,20 @@ class CodeWindow:
         statement.render_module(self.root, self.tree)
 
 
-# TODO: remove (used for debug message clarity)
-#from untext.pkg_list import known as known_modules
-#known_modules = []
-#fake_modules = []
-
-#def unknowns():
-#    keys = [k for k in sys.modules.keys() if k not in known_modules]
-#    return keys
-
-
-
-
 def main():
     # open files listed in sys.argv
     main_project = Project(os.getcwd())
-    #windows = []
     for path in sys.argv[1:]:
-        #print(path)
         if not os.path.exists(path):
-            # create the file
+            # create the file only if it doesn't exist
             with open(path, "x"):
                 pass
         main_project.open(path, load=False)
 
-    #fake_modules.extend(unknowns())
-
     def on_load():
-        # TODO: get rid of this step by starting pywebview before opening code windows or by using the static renderer first
+        # TODO: get rid of this step by starting pywebview before opening CodeWindows (with a ProjectWindow for example) or by using the static renderer first
         for win in main_project.windows:
             win.load()
-
-        # erase sys.modules
-        # untext itself will not import anything more,
-        # the next imports will be made by the user
-        #print("initial sys.modules entries:")
-        #print(sys.modules.keys())
-        #for x in list(sys.modules.keys()):
-        #    known_modules.append(x)
-            #del sys.modules[x]
-        #print(unknowns()) #sys.modules.keys())
-        #print(fake_modules)
-        #print(sys.path)
 
     if not main_project.windows:
         print("Usage: untext <file1> <file2>")
