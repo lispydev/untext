@@ -32,16 +32,16 @@ from importlib import resources
 from types import ModuleType
 
 # test import, needed for exhaustiveness of the renderer (TODO: remove once we have automated regression tests for the renderer)
-import untext.rendering.statement as statement, untext.rendering.expression as expression
+import untext.rendering.dynamic.statement as statement, untext.rendering.dynamic.expression as expression
 def f(a, b):
     pass
 
-from untext.rendering import dom
-from untext.rendering.dom import div_old as div, block
+from untext.rendering.dynamic import dom
+from untext.rendering.dynamic.dom import div_old as div, block
 
 #import rendering.statement, rendering.expression
 
-from untext.rendering import statement, expression
+from untext.rendering.dynamic import statement, expression
 
 
 
