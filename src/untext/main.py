@@ -148,7 +148,7 @@ def render_importfrom(node):
             fragments.append(f"{alias.name} as {alias.asname}")
     # TODO: support multiline syntax if the fragments are too long
     fragments = ", ".join(fragments)
-    line = f"from {node.level * '.'}{node.module} import {fragments}"
+    line = f"from {node.level * '.'}{node.module if node.module is not None else ''} import {fragments}"
     return div(line)
 
 

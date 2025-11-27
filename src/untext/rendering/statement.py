@@ -215,7 +215,8 @@ def render_importfrom(parent: Element, node: ast.ImportFrom) -> Element:
     from_prefixed = add(elt, "from-prefix row gap")
     from_content = add(from_prefixed, "row")
     relative_level = add_text(from_content, "." * node.level)
-    from_field = add_text(from_content, node.module)
+    if node.module is not None:
+        from_field = add_text(from_content, node.module)
 
     import_prefixed = add(elt, "import-prefix row gap")
     aliases = add(import_prefixed, "aliases row comma-sep")
