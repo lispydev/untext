@@ -12,26 +12,26 @@ import json
 from .html import node, text, element
 
 
-def render(parent: Element, node: ast.expr):
+def render(node: ast.expr):
     match type(node):
         case ast.BoolOp:
-            return render_boolop(parent, node)
+            return render_boolop(node)
         case ast.NamedExpr:
             raise NotImplementedError('expression.render() not implemented for ast.NamedExpr')
         case ast.BinOp:
-            return render_binop(parent, node)
+            return render_binop(node)
         case ast.UnaryOp:
-            return render_unaryop(parent, node)
+            return render_unaryop(node)
         case ast.Lambda:
             raise NotImplementedError('expression.render() not implemented for ast.Lambda')
         case ast.IfExp:
-            return render_ifexp(parent, node)
+            return render_ifexp(node)
         case ast.Dict:
-            return render_dict(parent, node)
+            return render_dict(node)
         case ast.Set:
             raise NotImplementedError('expression.render() not implemented for ast.Set')
         case ast.ListComp:
-            return render_list_comprehension(parent, node)
+            return render_list_comprehension(node)
         case ast.SetComp:
             raise NotImplementedError('expression.render() not implemented for ast.SetComp')
         case ast.DictComp:
@@ -45,33 +45,33 @@ def render(parent: Element, node: ast.expr):
         case ast.YieldFrom:
             raise NotImplementedError('expression.render() not implemented for ast.YieldFrom')
         case ast.Compare:
-            return render_compare(parent, node)
+            return render_compare(node)
         case ast.Call:
-            return render_call(parent, node)
+            return render_call(node)
         case ast.FormattedValue:
-            return render_formatted_value(parent, node)
+            return render_formatted_value(node)
         # case ast.Interpolation:
         #     raise NotImplementedError('expression.render() not implemented for ast.Interpolation')
         case ast.JoinedStr:
-            return render_joinedstr(parent, node)
+            return render_joinedstr(node)
         # case ast.TemplateStr:
         #     raise NotImplementedError('expression.render() not implemented for ast.TemplateStr')
         case ast.Constant:
-            return render_constant(parent, node)
+            return render_constant(node)
         case ast.Attribute:
-            return render_attribute(parent, node)
+            return render_attribute(node)
         case ast.Subscript:
-            return render_subscript(parent, node)
+            return render_subscript(node)
         case ast.Starred:
-            return render_starred(parent, node)
+            return render_starred(node)
         case ast.Name:
-            return render_name(parent, node)
+            return render_name(node)
         case ast.List:
-            return render_list(parent, node)
+            return render_list(node)
         case ast.Tuple:
-            return render_tuple(parent, node)
+            return render_tuple(node)
         case ast.Slice:
-            return render_slice(parent, node)
+            return render_slice(node)
         case default:
             raise ValueError(f"Unexpected ast expression type: {type(node)}")
 
@@ -117,7 +117,9 @@ def render(parent: Element, node: ast.expr):
 #
 #
 
-def render_boolop(parent: Element, node: ast.BoolOp) -> Element:
+def render_boolop(node: ast.BoolOp):
+    yield ""
+    return
     elt = add_node(parent, node, "row gap")
     elt.classes.append(f"{read_boolop(node.op)}-sep")
     for v in node.values:
@@ -141,7 +143,9 @@ in practice, css support is lacking, so we need this:
   <div class="operand">b</div>
 </div>
 """
-def render_binop(parent: Element, node: ast.BinOp) -> Element:
+def render_binop(node: ast.BinOp):
+    yield ""
+    return
     elt = add_node(parent, node, "operation row gap")
     elt.attributes["data-operator"] = read_binaryop(node.op)
     operator_suffixed = add(elt, "row gap op-suffixed")
@@ -203,7 +207,9 @@ def read_binaryop(op: ast.operator):
 # TODO: go back to previous "operator separators" and replace them by DOM nodes
 # (operators have semantic meaning, they are not just syntax)
 # (keep the css for infix inlining if needed)
-def render_unaryop(parent: Element, node: ast.UnaryOp) -> Element:
+def render_unaryop(node: ast.UnaryOp):
+    yield ""
+    return
     elt = add_node(parent, node, "row")
     op = add(elt, text=read_unaryop(node.op))
     value = render(elt, node.operand)
@@ -235,7 +241,9 @@ def read_boolop(op: ast.boolop):
         raise NotImplementedError(f"unknown boolean operator: {op}")
 
 
-def render_ifexp(parent: Element, node: ast.IfExp) -> Element:
+def render_ifexp(node: ast.IfExp):
+    yield ""
+    return
     elt = add_node(parent, node, "row gap")
     condition = add(elt)
     test = render(condition, node.test)
@@ -248,7 +256,7 @@ def render_ifexp(parent: Element, node: ast.IfExp) -> Element:
 
 
 # TODO: test with more kinds of literals
-def render_dict(parent: Element, node: ast.Dict):
+def render_dict(node: ast.Dict):
     # TODO: multi-line rendering:
     # ... {
     #     ....
@@ -268,7 +276,9 @@ def render_dict(parent: Element, node: ast.Dict):
         expression.render(value, v)
 
 
-def render_list_comprehension(parent: Element, node: ast.ListComp) -> Element:
+def render_list_comprehension(node: ast.ListComp):
+    yield ""
+    return
     elt = add_node(parent, node, "brackets row")
     spaced_content = add(elt, "row gap")
     selected = render(spaced_content, node.elt)
@@ -278,7 +288,9 @@ def render_list_comprehension(parent: Element, node: ast.ListComp) -> Element:
         expr = render_comprehension_generator(generators, g)
     return elt
 
-def render_comprehension_generator(parent: Element, node: ast.comprehension) -> Element:
+def render_comprehension_generator(node: ast.comprehension):
+    yield ""
+    return
     # TODO: support async
     assert node.is_async == 0
 
@@ -296,7 +308,9 @@ def render_comprehension_generator(parent: Element, node: ast.comprehension) -> 
     return elt
 
 
-def render_compare(parent: Element, node: ast.Compare) -> Element:
+def render_compare(node: ast.Compare):
+    yield ""
+    return
     # in python, comparisons can be complex sequences, like:
     # 1 < x < y < 6
     # 1 is called left
@@ -337,7 +351,9 @@ def read_op(op: ast.operator):
 
 
 # TODO: add more DOM encoding
-def render_call(parent: Element, node: ast.Call) -> Element:
+def render_call(node: ast.Call):
+    yield ""
+    return
     elt = add_node(parent, node, "call row")
     func = render(elt, node.func)
     args = add(elt, "parens row")
@@ -354,7 +370,9 @@ def render_call(parent: Element, node: ast.Call) -> Element:
     return elt
 
 # part of render_call(), also used by statement.render_class()
-def render_keyword_arg(parent: Element, node: ast.keyword) -> Element:
+def render_keyword_arg(node: ast.keyword):
+    yield ""
+    return
     elt = add_node(parent, node, "equal-sep row")
     # TODO: use a wrapper for "row"
     # not needed here because there is only text,
@@ -365,7 +383,9 @@ def render_keyword_arg(parent: Element, node: ast.keyword) -> Element:
     render(val, node.value)
     return elt
 
-def render_formatted_value(parent: Element, node: ast.FormattedValue) -> Element:
+def render_formatted_value(node: ast.FormattedValue):
+    yield ""
+    return
     # TODO: support other conversion types:
     # -1: unspecified (default is str())
     # 97: !a, ascii
@@ -382,7 +402,9 @@ def render_formatted_value(parent: Element, node: ast.FormattedValue) -> Element
 
 # f"{x}<text>{y}"
 # f-"-({(<x>)}-(<json-encoded text>)-({<y>}))-"
-def render_joinedstr(parent: Element, node: ast.JoinedStr) -> Element:
+def render_joinedstr(node: ast.JoinedStr):
+    yield ""
+    return
     elt = add_node(parent, node, "row f-prefix")
     quoted = add(elt, "quotes row")
     for e in node.values:
@@ -405,7 +427,9 @@ def render_joinedstr(parent: Element, node: ast.JoinedStr) -> Element:
     return elt
 
 
-def render_constant(parent: Element, node: ast.Constant) -> Element:
+def render_constant(node: ast.Constant):
+    yield ""
+    return
     assert node.kind is None
     elt = add_node(parent, node, "literal")
     # TODO: test very carefully
@@ -447,13 +471,17 @@ def render_constant(parent: Element, node: ast.Constant) -> Element:
         #print(elt.text)
     return elt
 
-def render_attribute(parent: Element, node: ast.Attribute) -> Element:
+def render_attribute(node: ast.Attribute):
+    yield ""
+    return
     elt = add_node(parent, node, "attribute row dot-sep")
     render(elt, node.value)
     add(add(elt, "row"), text=node.attr)
     return elt
 
-def render_subscript(parent: Element, node: ast.Subscript) -> Element:
+def render_subscript(node: ast.Subscript):
+    yield ""
+    return
     # node.ctx is either ast.Load or ast.Store
     # Store if the subscript is in a left side of an assignment
     # Load if the subscript is in an expression to evaluate
@@ -464,18 +492,24 @@ def render_subscript(parent: Element, node: ast.Subscript) -> Element:
     return elt
 
 
-def render_starred(parent: Element, node: ast.Starred) -> Element:
+def render_starred(node: ast.Starred):
+    yield ""
+    return
     #print(node.ctx)
     elt = add_node(parent, node, "star-prefix row")
     render(elt, node.value)
     return elt
 
-def render_name(parent: Element, node: ast.Name) -> Element:
+def render_name(node: ast.Name):
+    yield ""
+    return
     elt = add_node(parent, node, "symbol")
     elt.text = node.id
     return elt
 
-def render_list(parent: Element, node: ast.List) -> Element:
+def render_list(node: ast.List):
+    yield ""
+    return
     assert isinstance(node.ctx, ast.Load)
     elt = add_node(parent, node, "brackets row")
     comma_separated = add(elt, "comma-sep row")
@@ -485,7 +519,9 @@ def render_list(parent: Element, node: ast.List) -> Element:
     return elt
 
 
-def render_tuple(parent: Element, node: ast.Tuple) -> Element:
+def render_tuple(node: ast.Tuple):
+    yield ""
+    return
     #print(node.ctx)
     elt = add_node(parent, node, "parens row")
     if len(node.elts) == 0:
@@ -503,7 +539,7 @@ def render_tuple(parent: Element, node: ast.Tuple) -> Element:
     return elt
 
 
-def render_slice(parent: Element, node: ast.Slice):
+def render_slice(node: ast.Slice):
     elt = add_node(parent, node)
     colon_split = add(elt, "row colon-sep")
     left = add(colon_split, "row")
