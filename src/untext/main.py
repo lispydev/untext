@@ -44,6 +44,8 @@ from untext.rendering.dynamic.dom import div_old as div, block
 from untext.rendering.dynamic import statement, expression
 
 
+from untext.rendering import static
+
 
 
 """
@@ -747,7 +749,7 @@ class CodeWindow:
 
         # TODO: update the static renderer and skip the initial DOM rendering
         self.tree = ast.parse(self.source)
-        self.html = render_module(self.tree)
+        self.html = "".join(static.statement.render_module(self.tree)) #render_module(self.tree)
 
         # the API cannot have a CodeWindow as an attribute
         # the constructor cannot have parameters
