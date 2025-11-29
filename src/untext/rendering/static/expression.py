@@ -118,7 +118,7 @@ def render(node: ast.expr):
 #
 
 def render_boolop(node: ast.BoolOp):
-    yield "boolop"
+    yield from element("bg-red", text("boolop"))
     return
     elt = add_node(parent, node, "row gap")
     elt.classes.append(f"{read_boolop(node.op)}-sep")
@@ -144,7 +144,7 @@ in practice, css support is lacking, so we need this:
 </div>
 """
 def render_binop(node: ast.BinOp):
-    yield "binop"
+    yield from element("bg-red", text("binop"))
     return
     elt = add_node(parent, node, "operation row gap")
     elt.attributes["data-operator"] = read_binaryop(node.op)
@@ -208,7 +208,7 @@ def read_binaryop(op: ast.operator):
 # (operators have semantic meaning, they are not just syntax)
 # (keep the css for infix inlining if needed)
 def render_unaryop(node: ast.UnaryOp):
-    yield "unaryop"
+    yield from element("bg-red", text("unaryop"))
     return
     elt = add_node(parent, node, "row")
     op = add(elt, text=read_unaryop(node.op))
@@ -242,7 +242,7 @@ def read_boolop(op: ast.boolop):
 
 
 def render_ifexp(node: ast.IfExp):
-    yield "ifexp"
+    yield from element("bg-red", text("ifexp"))
     return
     elt = add_node(parent, node, "row gap")
     condition = add(elt)
@@ -277,7 +277,7 @@ def render_dict(node: ast.Dict):
 
 
 def render_list_comprehension(node: ast.ListComp):
-    yield "list_comprehension"
+    yield from element("bg-red", text("list_comprehension"))
     return
     elt = add_node(parent, node, "brackets row")
     spaced_content = add(elt, "row gap")
@@ -289,7 +289,7 @@ def render_list_comprehension(node: ast.ListComp):
     return elt
 
 def render_comprehension_generator(node: ast.comprehension):
-    yield "comprehension_generator"
+    yield from element("bg-red", text("comprehension_generator"))
     return
     # TODO: support async
     assert node.is_async == 0
@@ -309,7 +309,7 @@ def render_comprehension_generator(node: ast.comprehension):
 
 
 def render_compare(node: ast.Compare):
-    yield "compare"
+    yield from element("bg-red", text("compare"))
     return
     # in python, comparisons can be complex sequences, like:
     # 1 < x < y < 6
@@ -352,7 +352,7 @@ def read_op(op: ast.operator):
 
 # TODO: add more DOM encoding
 def render_call(node: ast.Call):
-    yield "call"
+    yield from element("bg-red", text("call"))
     return
     elt = add_node(parent, node, "call row")
     func = render(elt, node.func)
@@ -371,7 +371,7 @@ def render_call(node: ast.Call):
 
 # part of render_call(), also used by statement.render_class()
 def render_keyword_arg(node: ast.keyword):
-    yield "keyword_arg"
+    yield from element("bg-red", text("keyword_arg"))
     return
     elt = add_node(parent, node, "equal-sep row")
     # TODO: use a wrapper for "row"
@@ -384,7 +384,7 @@ def render_keyword_arg(node: ast.keyword):
     return elt
 
 def render_formatted_value(node: ast.FormattedValue):
-    yield "formatted_value"
+    yield from element("bg-red", text("formatted_value"))
     return
     # TODO: support other conversion types:
     # -1: unspecified (default is str())
@@ -403,7 +403,7 @@ def render_formatted_value(node: ast.FormattedValue):
 # f"{x}<text>{y}"
 # f-"-({(<x>)}-(<json-encoded text>)-({<y>}))-"
 def render_joinedstr(node: ast.JoinedStr):
-    yield "joinedstr"
+    yield from element("bg-red", text("joinedstr"))
     return
     elt = add_node(parent, node, "row f-prefix")
     quoted = add(elt, "quotes row")
@@ -418,17 +418,17 @@ def render_joinedstr(node: ast.JoinedStr):
             # which breaks if there is a single quote in the string
             # and needs a second layer of escaping for everything that is escaped
             # TODO: merge with literal string formatting
-            text = json.dumps(e.value).replace("\\", "\\\\").replace("'", "\\'")
+            str_text = json.dumps(e.value).replace("\\", "\\\\").replace("'", "\\'")
             # remove quotes (and let the css quotes surround the whole f-string)
-            text = text[1:-1]
+            str_text = str_text[1:-1]
             #add(quoted, text=text)
-            pre = add_pre(quoted, text=text)
+            pre = add_pre(quoted, text=str_text)
             #parts.append(e.value)
     return elt
 
 
 def render_constant(node: ast.Constant):
-    yield "constant"
+    yield from element("bg-red", text("constant"))
     return
     assert node.kind is None
     elt = add_node(parent, node, "literal")
@@ -451,8 +451,8 @@ def render_constant(node: ast.Constant):
         # pywebview uses JS eval to do things, which seems to break newline and quote escaping
         #text = json.dumps(node.value).replace("\\", "\\\\")
         # new fix imported from f-string (JoinedStr) tests
-        text = json.dumps(node.value).replace("\\", "\\\\").replace("'", "\\'")
-        elt.text = text
+        str_text = json.dumps(node.value).replace("\\", "\\\\").replace("'", "\\'")
+        elt.text = str_text
         # TODO: format multiline strings differently (""" """)
         # does not work:
         # (js eval replaces escaped "\n" by \n)
@@ -472,7 +472,7 @@ def render_constant(node: ast.Constant):
     return elt
 
 def render_attribute(node: ast.Attribute):
-    yield "attribute"
+    yield from element("bg-red", text("attribute"))
     return
     elt = add_node(parent, node, "attribute row dot-sep")
     render(elt, node.value)
@@ -480,7 +480,7 @@ def render_attribute(node: ast.Attribute):
     return elt
 
 def render_subscript(node: ast.Subscript):
-    yield "subscript"
+    yield from element("bg-red", text("subscript"))
     return
     # node.ctx is either ast.Load or ast.Store
     # Store if the subscript is in a left side of an assignment
@@ -493,7 +493,7 @@ def render_subscript(node: ast.Subscript):
 
 
 def render_starred(node: ast.Starred):
-    yield "starred"
+    yield from element("bg-red", text("starred"))
     return
     #print(node.ctx)
     elt = add_node(parent, node, "star-prefix row")
@@ -501,14 +501,14 @@ def render_starred(node: ast.Starred):
     return elt
 
 def render_name(node: ast.Name):
-    yield "name"
+    yield from element("bg-red", text("name"))
     return
     elt = add_node(parent, node, "symbol")
     elt.text = node.id
     return elt
 
 def render_list(node: ast.List):
-    yield "list"
+    yield from element("bg-red", text("list"))
     return
     assert isinstance(node.ctx, ast.Load)
     elt = add_node(parent, node, "brackets row")
@@ -520,7 +520,7 @@ def render_list(node: ast.List):
 
 
 def render_tuple(node: ast.Tuple):
-    yield "tuple"
+    yield from element("bg-red", text("tuple"))
     return
     #print(node.ctx)
     elt = add_node(parent, node, "parens row")
