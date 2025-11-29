@@ -62,13 +62,14 @@ stmt = FunctionDef(identifier name, arguments args,
 #from webview.dom.element import Element
 import ast
 
-#from .dom import register, div, block, add_node, add, add_text
-# html generators
+# html generation wrappers
 from .html import node, text, element
 from . import html
+
 # expressions can be found inside statements, but not the opposite
-# statement.py imports expression.py, but not the opposite
+# (statement.py imports expression.py, but not the opposite)
 from . import expression
+
 
 
 """
@@ -100,14 +101,6 @@ def render_module(node: ast.Module):
         else:
             items.append(render(elt))
     yield from element("module", *items)
-
-    elt = add_node(parent, node)
-    for stmt in node.body:
-        render(None, stmt)
-    return elt
-
-
-
 
 
 
@@ -171,6 +164,7 @@ def render(node: ast.stmt):
             yield from render_raise(node)
             raise ValueError(f"Unexpected ast statement type: {type(node)}")
         case ast.Try:
+            # TODO: implement
             yield from render_try(node)
             raise ValueError(f"Unexpected ast statement type: {type(node)}")
         case ast.TryStar:
@@ -212,134 +206,6 @@ AST statement rendering
 
 (implementation for each type)
 """
-
-def render_match(parent, node: ast.Match):
-    elt = add_node(parent, node)
-    header = add(elt)
-    colon_suffix = add(header, "colon-suffix row")
-    match_prefix = add(colon_suffix, "match-prefix row gap")
-    matched_value = expression.render(match_prefix, node.subject)
-
-    cases = add(elt, "block")
-    for case in node.cases:
-        render_case(cases, case)
-
-    return elt
-
-# part of render_match
-def render_case(parent, node: ast.match_case):
-    # TODO: support more cases
-    assert node.guard is None
-    elt = add_node(parent, node)
-    header = add(elt, "row colon-suffix")
-    content = add(header, "row gap case-prefix")
-    # turns out match patterns are not actually expressions,
-    # despite having the same syntax
-    render_pattern(content, node.pattern)
-
-    body = add(elt, "block")
-    for stmt in node.body:
-        render(body, stmt)
-
-# TODO: implement missing cases
-def render_pattern(parent, node: ast.pattern):
-    match type(node):
-        case ast.MatchValue:
-            return render_match_value(parent, node)
-        case ast.MatchSingleton:
-            return render_match_singleton(parent, node)
-        case ast.MatchSequence:
-            return render_match_sequence(parent, node)
-        case ast.MatchMapping:
-            return render_match_mapping(parent, node)
-        case ast.MatchClass:
-            return render_match_class(parent, node)
-
-        case ast.MatchStar:
-            return render_match_star(parent, node)
-
-        case ast.MatchAs:
-            return render_match_as(parent, node)
-        case ast.MatchOr:
-            return render_match_or(parent, node)
-
-        case default:
-            raise ValueError(f"Unexpected match pattern type: {type(node)}")
-
-
-def render_match_value(parent, node: ast.MatchValue):
-    elt = add_node(parent, node)
-    expression.render(elt, node.value)
-
-def render_match_as(parent, node: ast.MatchAs):
-    # TODO: support other cases
-    # case [x] as y:
-    # case default:     <--- the only kind used
-
-    # specific to case default:
-    assert node.pattern is None
-    assert node.name == "default"
-    elt = add_node(parent, node)
-    add_text(elt, node.name)
-    return elt
-
-
-
-
-
-def render_raise(parent, node: ast.Raise):
-    # TODO: check if support for this attribute is needed
-    assert node.cause is None
-    elt = add_node(parent, node, "raise-prefix row gap")
-    expression.render(elt, node.exc)
-    return elt
-
-
-def render_assert(parent, node: ast.Assert):
-    # TODO: support assertion messages
-    assert node.msg is None
-    elt = add_node(parent, node, "assert-prefix gap row")
-    expression.render(elt, node.test)
-    return elt
-
-def render_import(parent, node: ast.Import):
-    elt = add_node(parent, node, "import import-prefix row")
-    aliases = add(elt, "aliases row comma-sep")
-    for name in node.names:
-        #comma_separated_item = add(aliases, "row")
-        render_alias(add(aliases, "row gap"), name)
-    return elt
-
-# sub-part of import and importfrom nodes
-def render_alias(parent, node: ast.alias):
-    elt = add_node(parent, node, "alias row")
-    if node.asname is not None:
-        # create an alias (div (div name) "as" (div asname))
-        alias = add(elt, "import-alias as-sep row gap")
-        name = add_text(add(alias, "row gap"), node.name)
-        asname = add_text(add(alias, "row gap"), node.asname)
-    else:
-        # TODO: find a class name for "unaliased import"
-        alias = add(elt)
-        name = add_text(alias, node.name)
-    return elt
-
-
-def render_importfrom(parent, node: ast.ImportFrom):
-    elt = add_node(parent, node, "importfrom row gap")
-
-    # prefixed items need .row and .gap to space their prefix and content
-    from_prefixed = add(elt, "from-prefix row gap")
-    from_content = add(from_prefixed, "row")
-    relative_level = add_text(from_content, "." * node.level)
-    if node.module is not None:
-        from_field = add_text(from_content, node.module)
-
-    import_prefixed = add(elt, "import-prefix row gap")
-    aliases = add(import_prefixed, "aliases row comma-sep")
-    for name in node.names:
-        render_alias(add(aliases, "row gap"), name)
-    return elt
 
 
 def render_funcdef(parent, node: ast.FunctionDef):
@@ -635,10 +501,6 @@ def render_elifs(elt, if_node: ast.If):
     return elt
 
 
-
-
-
-
 def render_with(parent, node: ast.With):
     assert node.type_comment is None
     elt = add_node(parent, node)
@@ -667,6 +529,136 @@ def render_withitem(parent, node: ast.withitem):
         unnamed = add(elt)
         expr = expression.render(unnamed, node.context_expr)
     return elt
+
+
+
+def render_match(parent, node: ast.Match):
+    elt = add_node(parent, node)
+    header = add(elt)
+    colon_suffix = add(header, "colon-suffix row")
+    match_prefix = add(colon_suffix, "match-prefix row gap")
+    matched_value = expression.render(match_prefix, node.subject)
+
+    cases = add(elt, "block")
+    for case in node.cases:
+        render_case(cases, case)
+
+    return elt
+
+# part of render_match
+def render_case(parent, node: ast.match_case):
+    # TODO: support more cases
+    assert node.guard is None
+    elt = add_node(parent, node)
+    header = add(elt, "row colon-suffix")
+    content = add(header, "row gap case-prefix")
+    # turns out match patterns are not actually expressions,
+    # despite having the same syntax
+    render_pattern(content, node.pattern)
+
+    body = add(elt, "block")
+    for stmt in node.body:
+        render(body, stmt)
+
+# TODO: implement missing cases
+def render_pattern(parent, node: ast.pattern):
+    match type(node):
+        case ast.MatchValue:
+            return render_match_value(parent, node)
+        case ast.MatchSingleton:
+            return render_match_singleton(parent, node)
+        case ast.MatchSequence:
+            return render_match_sequence(parent, node)
+        case ast.MatchMapping:
+            return render_match_mapping(parent, node)
+        case ast.MatchClass:
+            return render_match_class(parent, node)
+
+        case ast.MatchStar:
+            return render_match_star(parent, node)
+
+        case ast.MatchAs:
+            return render_match_as(parent, node)
+        case ast.MatchOr:
+            return render_match_or(parent, node)
+
+        case default:
+            raise ValueError(f"Unexpected match pattern type: {type(node)}")
+
+
+def render_match_value(parent, node: ast.MatchValue):
+    elt = add_node(parent, node)
+    expression.render(elt, node.value)
+
+def render_match_as(parent, node: ast.MatchAs):
+    # TODO: support other cases
+    # case [x] as y:
+    # case default:     <--- the only kind used
+
+    # specific to case default:
+    assert node.pattern is None
+    assert node.name == "default"
+    elt = add_node(parent, node)
+    add_text(elt, node.name)
+    return elt
+
+
+
+def render_raise(parent, node: ast.Raise):
+    # TODO: check if support for this attribute is needed
+    assert node.cause is None
+    elt = add_node(parent, node, "raise-prefix row gap")
+    expression.render(elt, node.exc)
+    return elt
+
+
+def render_assert(parent, node: ast.Assert):
+    # TODO: support assertion messages
+    assert node.msg is None
+    elt = add_node(parent, node, "assert-prefix gap row")
+    expression.render(elt, node.test)
+    return elt
+
+def render_import(parent, node: ast.Import):
+    elt = add_node(parent, node, "import import-prefix row")
+    aliases = add(elt, "aliases row comma-sep")
+    for name in node.names:
+        #comma_separated_item = add(aliases, "row")
+        render_alias(add(aliases, "row gap"), name)
+    return elt
+
+# sub-part of import and importfrom nodes
+def render_alias(parent, node: ast.alias):
+    elt = add_node(parent, node, "alias row")
+    if node.asname is not None:
+        # create an alias (div (div name) "as" (div asname))
+        alias = add(elt, "import-alias as-sep row gap")
+        name = add_text(add(alias, "row gap"), node.name)
+        asname = add_text(add(alias, "row gap"), node.asname)
+    else:
+        # TODO: find a class name for "unaliased import"
+        alias = add(elt)
+        name = add_text(alias, node.name)
+    return elt
+
+
+def render_importfrom(parent, node: ast.ImportFrom):
+    elt = add_node(parent, node, "importfrom row gap")
+
+    # prefixed items need .row and .gap to space their prefix and content
+    from_prefixed = add(elt, "from-prefix row gap")
+    from_content = add(from_prefixed, "row")
+    relative_level = add_text(from_content, "." * node.level)
+    if node.module is not None:
+        from_field = add_text(from_content, node.module)
+
+    import_prefixed = add(elt, "import-prefix row gap")
+    aliases = add(import_prefixed, "aliases row comma-sep")
+    for name in node.names:
+        render_alias(add(aliases, "row gap"), name)
+    return elt
+
+
 
 
 def render_nonlocal(parent, node: ast.Nonlocal):
