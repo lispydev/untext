@@ -666,27 +666,32 @@ def render_import(node: ast.Import):
             element(
                 "aliases row comma-sep",
                 #*aliases,
-                #[element("row gap", render_alias(name))
-                # for name in node.names]
+                *[element("row gap", render_alias(name))
+                    for name in node.names]
             )
         )
     )
 
 # sub-part of import and importfrom nodes
 def render_alias(node: ast.alias):
-    yield ""
-    return
-    elt = add_node(parent, node, "alias row")
     if node.asname is not None:
-        # create an alias (div (div name) "as" (div asname))
-        alias = add(elt, "import-alias as-sep row gap")
-        name = add_text(add(alias, "row gap"), node.name)
-        asname = add_text(add(alias, "row gap"), node.asname)
+        alias = html.element(
+            "named-alias import-alias as-sep row gap",
+            html.element("row gap", html.text(node.name)),
+            html.element("row gap", html.text(node.asname))
+        )
     else:
-        # TODO: find a class name for "unaliased import"
-        alias = add(elt)
-        name = add_text(alias, node.name)
-    return elt
+        alias = html.element(
+            "unnamed-alias",
+            html.text(node.name)
+        )
+    yield from html.node(
+        node,
+        html.element(
+            "alias row",
+            alias
+        )
+    )
 
 
 def render_importfrom(node: ast.ImportFrom):
