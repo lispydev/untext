@@ -12,6 +12,20 @@ HTML = Tuple[HTMLGenerator]
 Classes = str | List[str]
 
 
+# decorator for HTML generators
+# usage:
+# @debug
+# def render_...
+def debug(f):
+    def g(node):
+        for x in f(node):
+            print(x)
+            yield x
+    return g
+
+
+
+
 """
 (bidirectional) AST-DOM linking
 
