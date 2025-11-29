@@ -63,7 +63,7 @@ stmt = FunctionDef(identifier name, arguments args,
 import ast
 
 # html generation wrappers
-from .html import node, text, element
+from .html import node, text, element, debug
 from . import html
 
 # expressions can be found inside statements, but not the opposite
@@ -175,7 +175,7 @@ def render(node: ast.stmt):
             raise ValueError(f"Unexpected ast statement type: {type(node)}")
         case ast.Expr:
             # TODO: add a wrapper div, to type as a "expr in a statement"
-            yield from expression.render(node)
+            yield from expression.render(node.value)
         case ast.Pass:
             yield from render_pass(node)
         case ast.Break:
@@ -197,31 +197,32 @@ AST statement rendering
 
 
 def render_funcdef(node: ast.FunctionDef):
-    yield "funcdef"
-    return
+    # supported features checks
+    assert len(node.decorator_list) == 0
+    assert node.type_comment is None
     # 3.12+ feature
     # instead, see: type_comment
     # TODO: wait for pypy to reach 3.12 or explicitely stop supporting pypy
     #assert len(node.type_params) == 0
-    assert len(node.decorator_list) == 0
-    assert node.type_comment is None
-    elt = add_node(parent, node, "funcdef")
 
-    header = add(elt, "row colon-suffix")
-    spaced_signature = add(header, "row gap return-type-arrow-sep")
-    left = add(spaced_signature, "row")
-    funcname = add(left, "row gap def-prefix", node.name)
-    params = add(left, "parens row")
+    # header
+    name = text(node.name)
+    funcname = element("row def-prefix gap", name)
+    params = render_parameters(node.args)
+    funcparams = element("parens row", params)
+    head = element("row", funcname, funcparams)
     if node.returns is not None:
-        right = add(spaced_signature, "row gap")
-        expression.render(right, node.returns)
-    #params_content = add(params, "comma-sep row gap")
-    render_parameters(params, node.args)
-    body = add(elt, "block")
+        # "def f(...)" -> "def f(...) -> ..."
+        funcreturn = expression.render(node.returns)
+        head = element("row gap return-type-arrow-sep", head, funcreturn)
+    header = element("row colon-suffix", head)
 
-    for stmt in node.body:
-        render(body, stmt)
-    return elt
+    # body
+    body = [render(stmt) for stmt in node.body]
+    body_block = element("block", *body)
+
+    def_block = element("funcdef", header, body_block)
+    yield from html.node(node, def_block)
 
 
 # sub-part of render_funcdef
