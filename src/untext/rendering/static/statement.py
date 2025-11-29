@@ -695,22 +695,29 @@ def render_alias(node: ast.alias):
 
 
 def render_importfrom(node: ast.ImportFrom):
-    yield ""
-    return
-    elt = add_node(parent, node, "importfrom row gap")
+    # example: from ..a import b, c as d
 
-    # prefixed items need .row and .gap to space their prefix and content
-    from_prefixed = add(elt, "from-prefix row gap")
-    from_content = add(from_prefixed, "row")
-    relative_level = add_text(from_content, "." * node.level)
-    if node.module is not None:
-        from_field = add_text(from_content, node.module)
+    # ".."
+    import_level = html.text("." * node.level)
+    # "a"
+    from_module = html.text(node.module or "")
+    # ["b", "c as d"]
+    imported = [render_alias(name) for name in node.names]
+    # (comma separated) list items must be wrapped for styling separators
+    imported = [html.element("row gap", x) for x in imported]
 
-    import_prefixed = add(elt, "import-prefix row gap")
-    aliases = add(import_prefixed, "aliases row comma-sep")
-    for name in node.names:
-        render_alias(add(aliases, "row gap"), name)
-    return elt
+    # "b, c as d"
+    imported_field = html.element("aliases row comma-sep", *imported)
+    # "..a"
+    from_field = html.element("row", import_level, from_module)
+
+    # "import b, c as d"
+    import_part = html.element("import-prefix row gap", imported_field)
+    # "from ..a"
+    from_part = html.element("from-prefix row gap", from_field)
+
+    import_statement = html.element("importfrom row gap", from_part, import_part)
+    yield from html.node(node, import_statement)
 
 
 
