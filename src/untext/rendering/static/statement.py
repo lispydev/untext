@@ -227,8 +227,7 @@ def render_funcdef(node: ast.FunctionDef):
 
 # sub-part of render_funcdef
 def render_parameters(node: ast.arguments):
-    yield from element("bg-red", text("parameters"))
-    return
+    # assertions and attribute parsing
     # TODO: support more cases
     assert len(node.posonlyargs) == 0
     assert len(node.kwonlyargs) == 0
@@ -239,18 +238,22 @@ def render_parameters(node: ast.arguments):
     # flags (*args and **kwargs)
     assert node.vararg is None
     assert node.kwarg is None
-    elt = add(parent, "comma-sep row")
+
+    params = []
     for i, param in enumerate(node.args):
-        comma_separated_item = add(elt, "row gap")
+        param = render_param(param)
         if i >= default_padding:
-            param_elt = add(comma_separated_item, "equal-sep row gap")
-            render_param(param_elt, param)
-            expression.render(add(param_elt, "row gap"), node.defaults[i - default_padding])
-        else:
-            render_param(comma_separated_item, param)
-    #result = ", ".join([render_arg(arg) for arg in node.args])
-    #return result
-    return elt
+            default_value = node.defaults[i - default_padding]
+            # items of a list with a separator need a wrapper to style the separator
+            default_value = element("row gap", defaut_value)
+            param = element("row gap", param)
+            param = element("equal-sep row gap", param, default_value)
+        params.append(param)
+
+    params = [element("row gap", param) for param in params]
+    params = element("comma-sep row", *params)
+    yield from html.node(node, params)
+
 
 # sub-part of render_parameters
 def render_param(node: ast.arg):
