@@ -92,7 +92,8 @@ def render_module(node: ast.Module):
             lines[-1] += '"""'
             lines = [line if line else "<br>" for line in lines]
             lines = [f"<div>{line}</div>" for line in lines]
-            items.append("".join(lines))
+            #items.append("".join(lines))
+            items.append(html.text("".join(lines)))
             # failed implementation
             #rendered_text = elt.value.value.replace("\n", "</div><div>")
             #print(rendered_text)
@@ -115,54 +116,45 @@ def render(node: ast.stmt):
     match type(node):
         case ast.FunctionDef:
             yield from render_funcdef(node)
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
         case ast.AsyncFunctionDef:
             raise ValueError(f"Unexpected ast statement type: {type(node)}")
 
         case ast.ClassDef:
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
+            yield from render_classdef(node)
         case ast.Return:
             yield from render_return(node)
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
 
         case ast.Delete:
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
+            yield from render_delete(node)
         case ast.Assign:
             yield from render_assign(node)
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
         # 3.12+ feature
         # TODO: ignore it until pypy reaches 3.12 or stop supporting pypy
         #case ast.TypeAlias:
         #    raise ValueError(f"Unexpected ast statement type: {type(node)}")
         case ast.AugAssign:
             yield from render_augassign(node)
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
         case ast.AnnAssign:
             raise ValueError(f"Unexpected ast statement type: {type(node)}")
 
         case ast.For:
             yield from render_for(node)
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
         case ast.AsyncFor:
             raise ValueError(f"Unexpected ast statement type: {type(node)}")
         case ast.While:
             yield from render_while(node)
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
         case ast.If:
             yield from render_if(node)
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
         case ast.With:
             yield from render_with(node)
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
         case ast.AsyncWith:
             raise ValueError(f"Unexpected ast statement type: {type(node)}")
 
         case ast.Match:
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
+            yield from render_match(node)
 
         case ast.Raise:
             yield from render_raise(node)
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
         case ast.Try:
             # TODO: implement
             yield from render_try(node)
@@ -171,25 +163,23 @@ def render(node: ast.stmt):
             raise ValueError(f"Unexpected ast statement type: {type(node)}")
         case ast.Assert:
             yield from render_assert(node)
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
 
         case ast.Import:
             yield from render_import(node)
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
         case ast.ImportFrom:
             yield from render_importfrom(node)
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
 
         case ast.Global:
             raise ValueError(f"Unexpected ast statement type: {type(node)}")
-        case ast.NonLocal:
+        case ast.Nonlocal:
             raise ValueError(f"Unexpected ast statement type: {type(node)}")
         case ast.Expr:
-            yield from render_expr_statement(node)
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
+            # TODO: wrapper div ? to type as a "expr in a statement"
+            #yield from expression.render(node)
+            yield ""
+            return
         case ast.Pass:
             yield from render_pass(node)
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
         case ast.Break:
             raise ValueError(f"Unexpected ast statement type: {type(node)}")
         case ast.Continue:
@@ -208,7 +198,9 @@ AST statement rendering
 """
 
 
-def render_funcdef(parent, node: ast.FunctionDef):
+def render_funcdef(node: ast.FunctionDef):
+    yield ""
+    return
     # 3.12+ feature
     # instead, see: type_comment
     # TODO: wait for pypy to reach 3.12 or explicitely stop supporting pypy
@@ -235,7 +227,9 @@ def render_funcdef(parent, node: ast.FunctionDef):
 
 
 # sub-part of render_funcdef
-def render_parameters(parent, node: ast.arguments):
+def render_parameters(node: ast.arguments):
+    yield ""
+    return
     # TODO: support more cases
     assert len(node.posonlyargs) == 0
     assert len(node.kwonlyargs) == 0
@@ -260,7 +254,9 @@ def render_parameters(parent, node: ast.arguments):
     return elt
 
 # sub-part of render_parameters
-def render_param(parent, node: ast.arg):
+def render_param(node: ast.arg):
+    yield ""
+    return
     assert node.type_comment is None
     # text metadata (not needed in a no-text IDE)
     #print(arg.lineno)
@@ -279,7 +275,9 @@ def render_param(parent, node: ast.arg):
         expression.render(typed_group, node.annotation)
     return elt
 
-def render_classdef(parent, node: ast.ClassDef):
+def render_classdef(node: ast.ClassDef):
+    yield ""
+    return
     # TODO: support decorators
     # TODO: support type_params
     assert not node.decorator_list
@@ -302,14 +300,18 @@ def render_classdef(parent, node: ast.ClassDef):
         render(body, stmt)
     return elt
 
-def render_return(parent, node: ast.Return):
+def render_return(node: ast.Return):
+    yield ""
+    return
     elt = add_node(parent, node, "return-prefix row gap")
     if node.value is not None:
         expression.render(elt, node.value)
     return elt
 
 
-def render_delete(parent, node: ast.Delete):
+def render_delete(node: ast.Delete):
+    yield ""
+    return
     elt = add_node(parent, node)
     del_prefixed = add(elt, "del-prefix row gap")
     elts = add(del_prefixed, "comma-sep row")
@@ -318,7 +320,9 @@ def render_delete(parent, node: ast.Delete):
         expression.render(item, target)
 
 
-def render_assign(parent, node: ast.Assign):
+def render_assign(node: ast.Assign):
+    yield ""
+    return
     assert node.type_comment is None
     # TODO: support multiple targets
     # example:
@@ -350,7 +354,9 @@ def render_assign(parent, node: ast.Assign):
 # format: <node> <op>= <node>
 # <node><gap><op>=<gap><node>
 # (<node> (<op>=) <node>)
-def render_augassign(parent, node: ast.AugAssign):
+def render_augassign(node: ast.AugAssign):
+    yield ""
+    return
     elt = add_node(parent, node, "row gap")
     target = expression.render(add(elt), node.target)
     # hack: add an empty div to force the = separator to render
@@ -365,7 +371,9 @@ def render_augassign(parent, node: ast.AugAssign):
 
 
 
-def render_for(parent, node: ast.For):
+def render_for(node: ast.For):
+    yield ""
+    return
     assert node.type_comment is None
     elt = add_node(parent, node)
     header = add(elt, "row colon-suffix")
@@ -398,7 +406,9 @@ def render_for(parent, node: ast.For):
 
 
 
-def render_while(parent, node: ast.While):
+def render_while(node: ast.While):
+    yield ""
+    return
     elt = add_node(parent, node)
     header = add(elt, "colon-suffix row")
     header_content = add(header, "while-prefix row gap")
@@ -411,7 +421,9 @@ def render_while(parent, node: ast.While):
     #else_body = [render_statement(statement) for statement in node.orelse]
     return elt
 
-def render_if(parent, node: ast.If):
+def render_if(node: ast.If):
+    yield ""
+    return
     elt = add_node(parent, node)
     if is_elif(node):
         return render_elifs(elt, node)
@@ -501,7 +513,9 @@ def render_elifs(elt, if_node: ast.If):
     return elt
 
 
-def render_with(parent, node: ast.With):
+def render_with(node: ast.With):
+    yield ""
+    return
     assert node.type_comment is None
     elt = add_node(parent, node)
     # this breaks if newlines are added for clarity:
@@ -517,7 +531,9 @@ def render_with(parent, node: ast.With):
         render(body, stmt)
     return elt
 
-def render_withitem(parent, node: ast.withitem):
+def render_withitem(node: ast.withitem):
+    yield ""
+    return
     elt = add_node(parent, node)
     if node.optional_vars:
         # add "<expr> as <name>"
@@ -532,7 +548,9 @@ def render_withitem(parent, node: ast.withitem):
 
 
 
-def render_match(parent, node: ast.Match):
+def render_match(node: ast.Match):
+    yield ""
+    return
     elt = add_node(parent, node)
     header = add(elt)
     colon_suffix = add(header, "colon-suffix row")
@@ -546,7 +564,9 @@ def render_match(parent, node: ast.Match):
     return elt
 
 # part of render_match
-def render_case(parent, node: ast.match_case):
+def render_case(node: ast.match_case):
+    yield ""
+    return
     # TODO: support more cases
     assert node.guard is None
     elt = add_node(parent, node)
@@ -561,7 +581,9 @@ def render_case(parent, node: ast.match_case):
         render(body, stmt)
 
 # TODO: implement missing cases
-def render_pattern(parent, node: ast.pattern):
+def render_pattern(node: ast.pattern):
+    yield ""
+    return
     match type(node):
         case ast.MatchValue:
             return render_match_value(parent, node)
@@ -586,11 +608,15 @@ def render_pattern(parent, node: ast.pattern):
             raise ValueError(f"Unexpected match pattern type: {type(node)}")
 
 
-def render_match_value(parent, node: ast.MatchValue):
+def render_match_value(node: ast.MatchValue):
+    yield ""
+    return
     elt = add_node(parent, node)
     expression.render(elt, node.value)
 
-def render_match_as(parent, node: ast.MatchAs):
+def render_match_as(node: ast.MatchAs):
+    yield ""
+    return
     # TODO: support other cases
     # case [x] as y:
     # case default:     <--- the only kind used
@@ -604,7 +630,9 @@ def render_match_as(parent, node: ast.MatchAs):
 
 
 
-def render_raise(parent, node: ast.Raise):
+def render_raise(node: ast.Raise):
+    yield ""
+    return
     # TODO: check if support for this attribute is needed
     assert node.cause is None
     elt = add_node(parent, node, "raise-prefix row gap")
@@ -612,23 +640,42 @@ def render_raise(parent, node: ast.Raise):
     return elt
 
 
-def render_assert(parent, node: ast.Assert):
+def render_assert(node: ast.Assert):
+    yield ""
+    return
     # TODO: support assertion messages
     assert node.msg is None
     elt = add_node(parent, node, "assert-prefix gap row")
     expression.render(elt, node.test)
     return elt
 
-def render_import(parent, node: ast.Import):
-    elt = add_node(parent, node, "import import-prefix row")
-    aliases = add(elt, "aliases row comma-sep")
+def render_import(node: ast.Import):
+    aliases = []
     for name in node.names:
-        #comma_separated_item = add(aliases, "row")
-        render_alias(add(aliases, "row gap"), name)
-    return elt
+        continue
+        aliases.append(
+            element(
+                "row gap",
+                render_alias(name)
+            )
+        )
+    yield from html.node(
+        node,
+        element(
+            "import import-prefix row",
+            element(
+                "aliases row comma-sep",
+                #*aliases,
+                #[element("row gap", render_alias(name))
+                # for name in node.names]
+            )
+        )
+    )
 
 # sub-part of import and importfrom nodes
-def render_alias(parent, node: ast.alias):
+def render_alias(node: ast.alias):
+    yield ""
+    return
     elt = add_node(parent, node, "alias row")
     if node.asname is not None:
         # create an alias (div (div name) "as" (div asname))
@@ -642,7 +689,9 @@ def render_alias(parent, node: ast.alias):
     return elt
 
 
-def render_importfrom(parent, node: ast.ImportFrom):
+def render_importfrom(node: ast.ImportFrom):
+    yield ""
+    return
     elt = add_node(parent, node, "importfrom row gap")
 
     # prefixed items need .row and .gap to space their prefix and content
@@ -661,14 +710,18 @@ def render_importfrom(parent, node: ast.ImportFrom):
 
 
 
-def render_nonlocal(parent, node: ast.Nonlocal):
+def render_nonlocal(node: ast.Nonlocal):
+    yield ""
+    return
     elt = add_node(parent, node, "row gap nonlocal-prefix")
     names = add(elt, "row comma-sep")
     for name in node.names:
         add(names, "row gap", name)
 
 
-def render_pass(parent, node: ast.Pass):
+def render_pass(node: ast.Pass):
+    yield ""
+    return
     elt = add_node(parent, node, text="pass")
     return elt
 

@@ -73,8 +73,8 @@ def node(n: AST, *items: HTML) -> HTMLGenerator:
     id = genid()
     n.node_id = id
     # dom_mapping is useless because the Element does not exist yet and will have an id anyway
-    ast_mapping[n] = ast_node
-    yield from div(items, id=id)
+    ast_mapping[id] = n
+    yield from div(*items, id=id)
 
 
 # usage: div(text("hello"))
