@@ -231,7 +231,7 @@ def render_funcdef(node: ast.FunctionDef):
     body = [render(stmt) for stmt in node.body]
     body_block = element("block", *body)
 
-    yield from element("funcdef", header, body_block)
+    yield from element("def", header, body_block)
 
 
 # sub-part of render_funcdef
@@ -289,7 +289,7 @@ def render_parameters(node: ast.arguments):
         params.append(param)
 
 
-    yield from html.items("comma-sep row", "row gap", params)
+    yield from html.items("parameters comma-sep row", "row gap", params)
 
 
 # sub-part of render_parameters
@@ -298,6 +298,8 @@ def render_param(node: ast.arg):
     assert node.type_comment is None
 
     param_name = text(node.arg)
+    # used to indicate the structure of the html:
+    param_name = element("parameter-name")
     if node.annotation is None:
         #param_name = element("bg-red", param_name)
         yield from param_name
@@ -305,7 +307,7 @@ def render_param(node: ast.arg):
 
     annotation = expression.render(node.annotation)
     name = element("row colon-suffix", param_name)
-    param = element("row gap", name, annotation)
+    param = element("parameter row gap", name, annotation)
     yield from param
 
 
@@ -340,7 +342,7 @@ def render_return(node: ast.Return):
         value = expression.render(node.value)
     else:
         value = text("")
-    yield from element("return-prefix row gap", value)
+    yield from element("return return-prefix row gap", value)
 
 
 @register_node
@@ -348,7 +350,7 @@ def render_delete(node: ast.Delete):
     # example: del a, b, c
     items = [expression.render(target) for target in node.targets]
     items = html.items("comma-sep row", "row gap bg-red", items)
-    yield from element("del-prefix row gap bg-red", items)
+    yield from element("delete del-prefix row gap bg-red", items)
 
 
 @register_node
@@ -359,7 +361,7 @@ def render_assign(node: ast.Assign):
     targets = [expression.render(t) for t in node.targets]
     # display the value as the last (equal-separated) target
     targets.append(value)
-    formatted = html.items("equal-sep row gap", "row gap", targets)
+    formatted = html.items("assign equal-sep row gap", "row gap", targets)
     yield from formatted
 
 
@@ -426,7 +428,7 @@ def render_for(node: ast.For):
     #result = "".join(parts)
     #return div(result)
 
-    yield from element("for bg-red", header, body)
+    yield from element("for", header, body)
 
 
 
