@@ -359,7 +359,7 @@ def render_assign(node: ast.Assign):
     targets = [expression.render(t) for t in node.targets]
     # display the value as the last (equal-separated) target
     targets.append(value)
-    formatted = html.items("equal-sep row gap", "row gap bg-red", targets)
+    formatted = html.items("equal-sep row gap", "row gap", targets)
     yield from formatted
 
 
@@ -391,21 +391,26 @@ def render_augassign(node: ast.AugAssign):
 
 
 
+@register_node
 def render_for(node: ast.For):
-    yield from element("bg-red", text("for"))
-    return
     assert node.type_comment is None
-    elt = add_node(parent, node)
-    header = add(elt, "row colon-suffix")
-    prefixed = add(header, "for-prefix in-sep row gap")
-    # separators like in-sep need an additional div (add(elt)) to add the separator as a suffix of this wrapper div
-    target = expression.render(prefixed, node.target)
-    iterator = expression.render(add(prefixed, "row gap"), node.iter)
 
-    # TODO: WIP, debug later
-    body = add(elt, "block")
-    for stmt in node.body:
-        render(body, stmt)
+    # header
+    # example: "for x in lst:"
+    variable = expression.render(node.target)  # "x"
+    iterator = expression.render(node.iter)  # "lst"
+    # "x in lst"
+    # TODO: could fit .for-prefix here
+    header = html.items("in-sep row gap", "row gap",
+                                [variable, iterator])
+    # "for x in lst"
+    header = element("for-prefix row gap", header)
+    # "for x in lst:"
+    header = element("colon-suffix row", header)
+
+    body = [render(stmt) for stmt in node.body]
+    body = element("block", *body)
+
 
     # TODO: process for: else: blocks
     # (add more headers after the main body)
@@ -421,8 +426,7 @@ def render_for(node: ast.For):
     #result = "".join(parts)
     #return div(result)
 
-
-    return elt
+    yield from element("for bg-red", header, body)
 
 
 
