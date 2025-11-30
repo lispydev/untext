@@ -181,7 +181,7 @@ def render(node: ast.stmt):
         case ast.Break:
             raise ValueError(f"Unexpected ast statement type: {type(node)}")
         case ast.Continue:
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
+            yield from render_continue(node)
 
         # future python versions may add new things
         case default:
@@ -550,7 +550,7 @@ def render_elifs(if_node: ast.If):
 
     # TODO: see if render_if() and render_elif() can return the same html layou
     # if possible, use the same .if class for both
-    yield from element("elif bg-red", *blocks)
+    yield from element("elif", *blocks)
 
 
 def render_with(node: ast.With):
@@ -777,4 +777,7 @@ def render_nonlocal(node: ast.Nonlocal):
 def render_pass(node: ast.Pass):
     yield from html.node(node, text("pass"))
 
+
+def render_continue(node: ast.Continue):
+    yield from html.node(node, text("continue"))
 
