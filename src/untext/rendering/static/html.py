@@ -91,13 +91,6 @@ def node(n: AST, *items: HTML) -> HTMLGenerator:
     yield from div(*items, id=id)
 
 
-# decorator for html renderers
-def register_node(f):
-    def renderer(n: AST):
-        yield from node(n, f(n))
-    return renderer
-
-
 # usage: div(text("hello"))
 def text(x: str) -> HTMLGenerator:
     yield x
@@ -134,5 +127,22 @@ def element(classes: Classes, *items: HTML) -> HTMLGenerator:
 
 #def row():
 #    return "<div class='row'></div>"
+
+
+"""
+high level helpers
+"""
+
+# decorator for (node: AST) -> HTMLGenerator html renderers
+def register_node(f):
+    def renderer(n: AST):
+        yield from node(n, f(n))
+    return renderer
+
+def items(parent_style, item_style, *items):
+    items = [element(item_style, item) for item in items]
+    parent = element(parent_style, *items)
+    return parent
+
 
 

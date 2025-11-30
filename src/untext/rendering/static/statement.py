@@ -215,9 +215,11 @@ def render_funcdef(node: ast.FunctionDef):
     if node.returns is not None:
         # "def f(...)" -> "def f(...) -> ..."
         funcreturn = expression.render(node.returns)
-        head = element("row gap return-type-arrow-sep",
-                       element("row gap", head),
-                       element("row gap", funcreturn))
+        head = html.items("row gap return-type-arrow-sep", "row gap",
+                          head, funcreturn)
+        #head = element("row gap return-type-arrow-sep",
+        #               element("row gap", head),
+        #               element("row gap", funcreturn))
     header = element("row colon-suffix", head)
 
     # body
