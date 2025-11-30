@@ -172,7 +172,7 @@ def render(node: ast.stmt):
         case ast.Global:
             raise ValueError(f"Unexpected ast statement type: {type(node)}")
         case ast.Nonlocal:
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
+            yield from render_nonlocal(node)
         case ast.Expr:
             # TODO: add a wrapper div, to type as a "expr in a statement"
             yield from expression.render(node.value)
@@ -214,7 +214,9 @@ def render_funcdef(node: ast.FunctionDef):
     if node.returns is not None:
         # "def f(...)" -> "def f(...) -> ..."
         funcreturn = expression.render(node.returns)
-        head = element("row gap return-type-arrow-sep", head, funcreturn)
+        head = element("row gap return-type-arrow-sep",
+                       element("row gap", head),
+                       element("row gap", funcreturn))
     header = element("row colon-suffix", head)
 
     # body
@@ -230,25 +232,49 @@ def render_parameters(node: ast.arguments):
     # assertions and attribute parsing
     # TODO: support more cases
     assert len(node.posonlyargs) == 0
-    assert len(node.kwonlyargs) == 0
-    assert len(node.kw_defaults) == 0
     # default values are for the last parameters
     # need to match argument names to default values with indices
     default_padding = len(node.args) - len(node.defaults)
     # flags (*args and **kwargs)
-    assert node.vararg is None
     assert node.kwarg is None
 
     params = []
+    # normal args
     for i, param in enumerate(node.args):
         param = render_param(param)
         if i >= default_padding:
+            # TODO: refactor the <param> = <value> rendering into render_param()
             default_value = node.defaults[i - default_padding]
             # items of a list with a separator need a wrapper to style the separator
-            default_value = element("row gap", defaut_value)
+            default_value = element("row gap", expression.render(default_value))
             param = element("row gap", param)
             param = element("equal-sep row gap", param, default_value)
         params.append(param)
+
+    # vararg
+    if node.vararg is not None:
+        param = render_param(node.vararg)
+        starred = element("star-prefix row", param)
+        params.append(starred)
+
+    # kwonly args (args that cannot be positional due to the vararg before them)
+
+    # node.kwonlyargs are the parameters after the *vararg
+    # the *vararg comes after normal (non-kwonly) parameters
+    # their default values are in kw_defaults
+
+    # node.kw_default contains default values for every kwonly arg,
+    # with None when there is no default value
+    for i, param in enumerate(node.kwonlyargs):
+        param = render_param(param)
+        if node.kw_defaults[i] is not None:
+            default_value = node.kw_defaults[i]
+            # items of a list with a separator need a wrapper to style the separator
+            default_value = element("row gap", expression.render(default_value))
+            param = element("row gap", param)
+            param = element("equal-sep row gap", param, default_value)
+        params.append(param)
+
 
     params = [element("row gap", param) for param in params]
     params = element("comma-sep row", *params)
@@ -257,25 +283,20 @@ def render_parameters(node: ast.arguments):
 
 # sub-part of render_parameters
 def render_param(node: ast.arg):
-    yield from element("bg-red", text("param"))
-    return
     assert node.type_comment is None
-    # text metadata (not needed in a no-text IDE)
-    #print(arg.lineno)
-    #print(arg.col_offset)
-    #print(arg.end_lineno)
-    #print(arg.end_col_offset)
 
-    # comma-separated items must be inlined,
-    # so that the comma is on the same line
-    elt = add_node(parent, node, "row")
+    param_name = text(node.arg)
     if node.annotation is None:
-        add(elt, text=node.arg)
-    else:
-        typed_group = add(elt, "row gap")
-        name = add(typed_group, "row colon-suffix", text=node.arg)
-        expression.render(typed_group, node.annotation)
-    return elt
+        #param_name = element("bg-red", param_name)
+        yield from html.node(node, param_name)
+        return
+
+    annotation = expression.render(node.annotation)
+    name = element("row colon-suffix", param_name)
+    param = element("row gap", name, annotation)
+    yield from html.node(node, param)
+    return
+
 
 def render_classdef(node: ast.ClassDef):
     yield from element("bg-red", text("classdef"))
