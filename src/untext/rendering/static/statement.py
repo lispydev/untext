@@ -216,10 +216,7 @@ def render_funcdef(node: ast.FunctionDef):
         # "def f(...)" -> "def f(...) -> ..."
         funcreturn = expression.render(node.returns)
         head = html.items("row gap return-type-arrow-sep", "row gap",
-                          head, funcreturn)
-        #head = element("row gap return-type-arrow-sep",
-        #               element("row gap", head),
-        #               element("row gap", funcreturn))
+                          [head, funcreturn])
     header = element("row colon-suffix", head)
 
     # body
@@ -248,10 +245,12 @@ def render_parameters(node: ast.arguments):
         if i >= default_padding:
             # TODO: refactor the <param> = <value> rendering into render_param()
             default_value = node.defaults[i - default_padding]
-            # items of a list with a separator need a wrapper to style the separator
-            default_value = element("row gap", expression.render(default_value))
-            param = element("row gap", param)
-            param = element("equal-sep row gap", param, default_value)
+            default_value = expression.render(default_value)
+            param = html.items(
+                "equal-sep row gap",
+                "row gap",
+                [param, default_value]
+            )
         params.append(param)
 
     # vararg
@@ -273,14 +272,16 @@ def render_parameters(node: ast.arguments):
         if node.kw_defaults[i] is not None:
             default_value = node.kw_defaults[i]
             # items of a list with a separator need a wrapper to style the separator
-            default_value = element("row gap", expression.render(default_value))
-            param = element("row gap", param)
-            param = element("equal-sep row gap", param, default_value)
+            default_value = expression.render(default_value)
+            param = html.items(
+                "equal-sep row gap",
+                "row gap",
+                [param, default_value]
+            )
         params.append(param)
 
 
-    params = [element("row gap", param) for param in params]
-    yield from element("comma-sep row", *params)
+    yield from html.items("comma-sep row", "row gap", params)
 
 
 # sub-part of render_parameters
