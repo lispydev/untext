@@ -451,10 +451,8 @@ def render_while(node: ast.While):
 @register_node
 def render_if(node: ast.If):
     if is_elif(node):
-        yield from element("bg-red", text("ifelse"))
+        yield from render_elifs(node)
         return
-        # TODO:
-        return ender_elifs(node)
 
     test = expression.render(node.test)
     header = element("row gap if-prefix", test)
@@ -471,7 +469,7 @@ def render_if(node: ast.If):
         else_block = element("block", *else_body)
         parts.append(else_header)
         parts.append(else_block)
-    yield from element("", *parts)
+    yield from element("if", *parts)
 
 
 # helpers for elifs
@@ -507,42 +505,52 @@ def collect_branches(if_node: ast.If):
     branches.append(if_node.orelse)
     return branches
 
-def render_elifs(elt, if_node: ast.If):
+
+# the node registering is already done by render_if()
+def render_elifs(if_node: ast.If):
     branches = collect_branches(if_node)
     if_branch, *elif_branches, else_body = branches
 
 
-    # if
-    if_test, if_body = if_branch
-    if_elt = add(elt)
-    header = add(if_elt, "row colon-suffix")
-    header_content = add(header, "row gap if-prefix")
-    _if_test = expression.render(header_content, if_test)
+    blocks = []
 
-    body = add(if_elt, "block")
-    for stmt in if_body:
-        render(body, stmt)
+    # if
+    test, body = if_branch
+    test = expression.render(test)
+    header = element("row gap if-prefix", test)
+    header = element("row colon-suffix", header)
+
+    body = [render(stmt) for stmt in body]
+    body = element("block", *body)
+
+    if_block = element("if-block", header, body)
+    blocks.append(if_block)
 
     # elifs
-    for (test, ast_body) in elif_branches:
-        elif_elt = add(elt)
-        header = add(elif_elt, "row colon-suffix")
-        header_content = add(header, "row gap elif-prefix")
-        _test = expression.render(header_content, test)
-        body = add(elif_elt, "block")
-        for stmt in ast_body:
-            render(body, stmt)
+    for (test, body) in elif_branches:
+        test = expression.render(test)
+        header = element("row gap elif-prefix", test)
+        header = element("row colon-suffix", header)
+
+        body = [render(stmt) for stmt in body]
+        body = element("block", *body)
+
+        elif_block = element("elif-block", header, body)
+        blocks.append(elif_block)
 
     # else
     if else_body:
-        else_elt = add(elt)
-        header = add(else_elt, "row colon-suffix")
-        header_content = add(header, "row gap else-prefix")
-        body = add(else_elt, "block")
-        for stmt in else_body:
-            render(body, stmt)
+        header = element("row else-prefix colon-suffix")
+        body = [render(stmt) for stmt in else_body]
+        body = element("block", *body)
+        else_block = element("else-block", header, body)
+        blocks.append(else_block)
+        #header = add(else_elt, "row colon-suffix")
+        #header_content = add(header, "row gap else-prefix")
 
-    return elt
+    # TODO: see if render_if() and render_elif() can return the same html layou
+    # if possible, use the same .if class for both
+    yield from element("elif bg-red", *blocks)
 
 
 def render_with(node: ast.With):
