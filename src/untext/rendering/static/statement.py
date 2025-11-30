@@ -299,7 +299,7 @@ def render_param(node: ast.arg):
 
     param_name = text(node.arg)
     # used to indicate the structure of the html:
-    param_name = element("parameter-name")
+    param_name = element("parameter-name", param_name)
     if node.annotation is None:
         #param_name = element("bg-red", param_name)
         yield from param_name
