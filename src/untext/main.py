@@ -7,6 +7,7 @@ TODO: write helpers for body generation
 
 # TODO: write tests
 #print(1 < 3 < 5)
+#a = b = c = 5
 
 import webview
 import html
