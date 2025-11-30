@@ -63,7 +63,7 @@ stmt = FunctionDef(identifier name, arguments args,
 import ast
 
 # html generation wrappers
-from .html import node, text, element, debug
+from .html import node, text, element, debug, register_node
 from . import html
 
 # expressions can be found inside statements, but not the opposite
@@ -196,6 +196,7 @@ AST statement rendering
 """
 
 
+@register_node
 def render_funcdef(node: ast.FunctionDef):
     # supported features checks
     assert len(node.decorator_list) == 0
@@ -223,11 +224,11 @@ def render_funcdef(node: ast.FunctionDef):
     body = [render(stmt) for stmt in node.body]
     body_block = element("block", *body)
 
-    def_block = element("funcdef", header, body_block)
-    yield from html.node(node, def_block)
+    yield from element("funcdef", header, body_block)
 
 
 # sub-part of render_funcdef
+@register_node
 def render_parameters(node: ast.arguments):
     # assertions and attribute parsing
     # TODO: support more cases
@@ -277,25 +278,24 @@ def render_parameters(node: ast.arguments):
 
 
     params = [element("row gap", param) for param in params]
-    params = element("comma-sep row", *params)
-    yield from html.node(node, params)
+    yield from element("comma-sep row", *params)
 
 
 # sub-part of render_parameters
+@register_node
 def render_param(node: ast.arg):
     assert node.type_comment is None
 
     param_name = text(node.arg)
     if node.annotation is None:
         #param_name = element("bg-red", param_name)
-        yield from html.node(node, param_name)
+        yield from param_name
         return
 
     annotation = expression.render(node.annotation)
     name = element("row colon-suffix", param_name)
     param = element("row gap", name, annotation)
-    yield from html.node(node, param)
-    return
+    yield from param
 
 
 def render_classdef(node: ast.ClassDef):
@@ -672,6 +672,8 @@ def render_assert(node: ast.Assert):
     expression.render(elt, node.test)
     return elt
 
+
+# TODO: rewrite
 def render_import(node: ast.Import):
     aliases = []
     for name in node.names:
@@ -756,9 +758,6 @@ def render_nonlocal(node: ast.Nonlocal):
 
 
 def render_pass(node: ast.Pass):
-    yield from element("bg-red", text("pass"))
-    return
-    elt = add_node(parent, node, text="pass")
-    return elt
+    yield from html.node(node, text("pass"))
 
 
