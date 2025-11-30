@@ -15,23 +15,23 @@ from .html import node, text, element
 def render(node: ast.expr):
     match type(node):
         case ast.BoolOp:
-            return render_boolop(node)
+            yield from render_boolop(node)
         case ast.NamedExpr:
             raise NotImplementedError('expression.render() not implemented for ast.NamedExpr')
         case ast.BinOp:
-            return render_binop(node)
+            yield from render_binop(node)
         case ast.UnaryOp:
-            return render_unaryop(node)
+            yield from render_unaryop(node)
         case ast.Lambda:
             raise NotImplementedError('expression.render() not implemented for ast.Lambda')
         case ast.IfExp:
-            return render_ifexp(node)
+            yield from render_ifexp(node)
         case ast.Dict:
-            return render_dict(node)
+            yield from render_dict(node)
         case ast.Set:
             raise NotImplementedError('expression.render() not implemented for ast.Set')
         case ast.ListComp:
-            return render_list_comprehension(node)
+            yield from render_list_comprehension(node)
         case ast.SetComp:
             raise NotImplementedError('expression.render() not implemented for ast.SetComp')
         case ast.DictComp:
@@ -41,37 +41,37 @@ def render(node: ast.expr):
         case ast.Await:
             raise NotImplementedError('expression.render() not implemented for ast.Await')
         case ast.Yield:
-            raise NotImplementedError('expression.render() not implemented for ast.Yield')
+            yield from render_yield(node)
         case ast.YieldFrom:
-            raise NotImplementedError('expression.render() not implemented for ast.YieldFrom')
+            yield from render_yieldfrom(node)
         case ast.Compare:
-            return render_compare(node)
+            yield from render_compare(node)
         case ast.Call:
-            return render_call(node)
+            yield from render_call(node)
         case ast.FormattedValue:
-            return render_formatted_value(node)
+            yield from render_formatted_value(node)
         # case ast.Interpolation:
         #     raise NotImplementedError('expression.render() not implemented for ast.Interpolation')
         case ast.JoinedStr:
-            return render_joinedstr(node)
+            yield from render_joinedstr(node)
         # case ast.TemplateStr:
         #     raise NotImplementedError('expression.render() not implemented for ast.TemplateStr')
         case ast.Constant:
-            return render_constant(node)
+            yield from render_constant(node)
         case ast.Attribute:
-            return render_attribute(node)
+            yield from render_attribute(node)
         case ast.Subscript:
-            return render_subscript(node)
+            yield from render_subscript(node)
         case ast.Starred:
-            return render_starred(node)
+            yield from render_starred(node)
         case ast.Name:
-            return render_name(node)
+            yield from render_name(node)
         case ast.List:
-            return render_list(node)
+            yield from render_list(node)
         case ast.Tuple:
-            return render_tuple(node)
+            yield from render_tuple(node)
         case ast.Slice:
-            return render_slice(node)
+            yield from render_slice(node)
         case default:
             raise ValueError(f"Unexpected ast expression type: {type(node)}")
 
@@ -306,6 +306,16 @@ def render_comprehension_generator(node: ast.comprehension):
         render(condition, cond)
 
     return elt
+
+
+# TODO: implement
+
+def render_yield(node):
+    yield from element("bg-red", text("yield"))
+
+
+def render_yieldfrom(node):
+    yield from element("bg-red", text("yieldfrom"))
 
 
 def render_compare(node: ast.Compare):
