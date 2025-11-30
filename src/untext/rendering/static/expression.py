@@ -257,6 +257,9 @@ def render_ifexp(node: ast.IfExp):
 
 # TODO: test with more kinds of literals
 def render_dict(node: ast.Dict):
+    yield from element("bg-red", text("dict"))
+    return
+
     # TODO: multi-line rendering:
     # ... {
     #     ....
