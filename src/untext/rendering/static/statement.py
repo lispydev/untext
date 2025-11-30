@@ -447,25 +447,31 @@ def render_while(node: ast.While):
     #else_body = [render_statement(statement) for statement in node.orelse]
     return elt
 
-def render_if(node: ast.If):
-    yield from element("bg-red", text("if"))
-    return
-    elt = add_node(parent, node)
-    if is_elif(node):
-        return render_elifs(elt, node)
-    header = add(elt, "row colon-suffix")
-    header_content = add(header, "row gap if-prefix")
-    expression.render(header_content, node.test)
-    block = add(elt, "block")
-    for stmt in node.body:
-        render(block, stmt)
-    if node.orelse:
-        else_header = add(elt, "row colon-suffix else-prefix")
-        else_block = add(elt, "block")
-        for stmt in node.orelse:
-            render(else_block, stmt)
 
-    return elt
+@register_node
+def render_if(node: ast.If):
+    if is_elif(node):
+        yield from element("bg-red", text("ifelse"))
+        return
+        # TODO:
+        return ender_elifs(node)
+
+    test = expression.render(node.test)
+    header = element("row gap if-prefix", test)
+    header = element("row colon-suffix", header)
+
+    if_body = [render(stmt) for stmt in node.body]
+    if_block = element("block", *if_body)
+
+    parts = [header, if_block]
+
+    if node.orelse:
+        else_header = element("row colon-suffix else-prefix")
+        else_body = [render(stmt) for stmt in node.orelse]
+        else_block = element("block", *else_body)
+        parts.append(else_header)
+        parts.append(else_block)
+    yield from element("", *parts)
 
 
 # helpers for elifs
