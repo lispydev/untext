@@ -207,12 +207,11 @@ def render_funcdef(node: ast.FunctionDef):
     #assert len(node.type_params) == 0
 
     # decorators
-    # TODO:
-    if len(node.decorator_list):
-        print("TODO: decorators")
-        print(node.decorator_list)
-    decorators = []
-    decorators = element("")
+    decorators = [expression.render(d) for d in node.decorator_list]
+    decorators = [element("at-prefix row", d) for d in decorators]
+    # TODO: decide if subcomponents (decorator list, header, body)
+    # should be annotated with classes or not
+    decorators = element("decorators", *decorators)
 
     # header
     name = text(node.name)
@@ -231,7 +230,7 @@ def render_funcdef(node: ast.FunctionDef):
     body = [render(stmt) for stmt in node.body]
     body_block = element("block", *body)
 
-    yield from element("def", header, body_block)
+    yield from element("def", decorators, header, body_block)
 
 
 # sub-part of render_funcdef

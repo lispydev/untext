@@ -39,6 +39,9 @@
 .star-prefix::before {
 	content: "*";
 }
+.at-prefix::before {
+	content: "@";
+}
 
 /* does not work */
 /*.triple-quotes::before {
