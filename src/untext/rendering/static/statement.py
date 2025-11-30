@@ -199,12 +199,20 @@ AST statement rendering
 @register_node
 def render_funcdef(node: ast.FunctionDef):
     # supported features checks
-    assert len(node.decorator_list) == 0
+    #assert len(node.decorator_list) == 0
     assert node.type_comment is None
     # 3.12+ feature
     # instead, see: type_comment
     # TODO: wait for pypy to reach 3.12 or explicitely stop supporting pypy
     #assert len(node.type_params) == 0
+
+    # decorators
+    # TODO:
+    if len(node.decorator_list):
+        print("TODO: decorators")
+        print(node.decorator_list)
+    decorators = []
+    decorators = element("")
 
     # header
     name = text(node.name)
@@ -326,47 +334,33 @@ def render_classdef(node: ast.ClassDef):
         render(body, stmt)
     return elt
 
+@register_node
 def render_return(node: ast.Return):
-    yield from element("bg-red", text("return"))
-    return
-    elt = add_node(parent, node, "return-prefix row gap")
     if node.value is not None:
-        expression.render(elt, node.value)
-    return elt
+        value = expression.render(node.value)
+    else:
+        value = text("")
+    yield from element("return-prefix row gap", value)
 
 
+@register_node
 def render_delete(node: ast.Delete):
-    yield from element("bg-red", text("delete"))
-    return
-    elt = add_node(parent, node)
-    del_prefixed = add(elt, "del-prefix row gap")
-    elts = add(del_prefixed, "comma-sep row")
-    for target in node.targets:
-        item = add(elts, "row gap")
-        expression.render(item, target)
+    # example: del a, b, c
+    items = [expression.render(target) for target in node.targets]
+    items = html.items("comma-sep row", "row gap bg-red", items)
+    yield from element("del-prefix row gap bg-red", items)
 
 
+@register_node
 def render_assign(node: ast.Assign):
-    yield from element("bg-red", text("assign"))
-    return
     assert node.type_comment is None
-    # TODO: support multiple targets
-    # example:
-    # a = b = 1
-    assert len(node.targets) == 1
-    elt = add_node(parent, node, "row equal-sep gap")
-    variables = add(elt, "row gap")
-    #for t in node.targets:
-    expression.render(variables, node.targets[0])
-    value = add(elt, "row gap")
-    expression.render(value, node.value)
-    return
-    #if len(targets) == 1:
-    #    target = targets[0]
-    #    return div(f"{target} = {value}")
-    #else:
-    #    return div(f"{tuple(targets)} = {value}")
-    return elt
+
+    value = expression.render(node.value)
+    targets = [expression.render(t) for t in node.targets]
+    # display the value as the last (equal-separated) target
+    targets.append(value)
+    formatted = html.items("equal-sep row gap", "row gap bg-red", targets)
+    yield from formatted
 
 
 
