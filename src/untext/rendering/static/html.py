@@ -139,7 +139,7 @@ def register_node(f):
         yield from node(n, f(n))
     return renderer
 
-def items(parent_style, item_style, *items):
+def items(parent_style, item_style, items):
     items = [element(item_style, item) for item in items]
     parent = element(parent_style, *items)
     return parent
