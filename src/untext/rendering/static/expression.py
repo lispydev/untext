@@ -232,10 +232,17 @@ def read_unaryop(op: ast.unaryop):
         raise NotImplementedError("unknown unary operator")
 
 
-
-
-
+@register_node
 def render_ifexp(node: ast.IfExp):
+    yield from element("bg-red", text("ifexp"))
+    return
+    # TODO: check order
+    test = render(node.test)
+    if_expr = render(node.body)
+    if_body = element("if-prefix row gap", if_expr)
+    else_expr = render(node.orelse)
+    else_body = element("else-prefix row gap", else_expr)
+    #condition = 
     yield from element("bg-red", text("ifexp"))
     return
     elt = add_node(parent, node, "row gap")
@@ -358,37 +365,23 @@ def read_op(op: ast.operator):
 
 
 # TODO: add more DOM encoding
+@register_node
 def render_call(node: ast.Call):
-    yield from element("bg-red", text("call"))
-    return
-    elt = add_node(parent, node, "call row")
-    func = render(elt, node.func)
-    args = add(elt, "parens row")
-    comma_separated = add(args, "comma-sep row")
-    # positional args
-    for arg in node.args:
-        render(add(comma_separated, "row gap"), arg)
-    # kwargs
-    for kwarg in node.keywords:
-        render_keyword_arg(add(comma_separated, "row gap"), kwarg)
-        #eq_separated = add(comma_separated, "equal-sep row")
-        #kw = add(eq_separated, text=kwarg.arg)
-        #render(eq_separated, kwarg.value)
-    return elt
+    func = render(node.func)
+    args = [render(arg) for arg in node.args]
+    kwargs = [render_keyword_arg(kwarg) for kwarg in node.keywords]
+    args = html.items("comma-sep row", "row gap", args + kwargs)
+    args = element("parens row", args)
+    yield from element("call row", func, args)
+
 
 # part of render_call(), also used by statement.render_class()
+@register_node
 def render_keyword_arg(node: ast.keyword):
-    yield from element("bg-red", text("keyword_arg"))
-    return
-    elt = add_node(parent, node, "equal-sep row")
-    # TODO: use a wrapper for "row"
-    # not needed here because there is only text,
-    # but .equal-sep adds a ::before text content
-    # and using a wrapper div would unify the DOM conventions with the rest of the code
-    kw = add(elt, "row", text=node.arg)
-    val = add(elt, "row")
-    render(val, node.value)
-    return elt
+    kw = text(node.arg)
+    val = render(node.value)
+    yield from html.items("keyword-argument equal-sep row", "row", [kw, val])
+
 
 def render_formatted_value(node: ast.FormattedValue):
     yield from element("bg-red", text("formatted_value"))
