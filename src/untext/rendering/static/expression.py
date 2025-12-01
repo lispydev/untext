@@ -470,13 +470,14 @@ def render_constant(node: ast.Constant):
         #print(elt.text)
     return elt
 
+
+@register_node
 def render_attribute(node: ast.Attribute):
-    yield from element("bg-red", text("attribute"))
-    return
-    elt = add_node(parent, node, "attribute row dot-sep")
-    render(elt, node.value)
-    add(add(elt, "row"), text=node.attr)
-    return elt
+    obj = render(node.value)
+    attr = text(node.attr)
+    row = html.items("attribute row dot-sep", "row", [obj, attr])
+    yield from row
+
 
 def render_subscript(node: ast.Subscript):
     yield from element("bg-red", text("subscript"))
