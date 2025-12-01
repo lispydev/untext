@@ -311,29 +311,33 @@ def render_param(node: ast.arg):
 
 
 def render_classdef(node: ast.ClassDef):
-    yield from element("bg-red", text("classdef"))
-    return
     # TODO: support decorators
     # TODO: support type_params
     assert not node.decorator_list
-    elt = add_node(parent, node)
-    # header
-    colon_suffixed = add(elt, "row colon-suffix")
-    class_prefixed = add(colon_suffixed, "class-prefix row gap")
-    header_content = add(class_prefixed, "row")
-    name = add(header_content, text=node.name)
-    if node.keywords or node.bases:
-        paren_wrapped = add(header_content, "parens row")
-        arguments = add(paren_wrapped, "comma-sep row")
-        for kwarg in node.keywords:
-            expression.render_keyword_arg(add(arguments, "row gap"), kwarg)
-        for base in node.bases:
-            expression.render(add(arguments, "row gap"), base)
 
-    body = add(elt, "block")
-    for stmt in node.body:
-        render(body, stmt)
-    return elt
+    # decorators
+    # TODO:
+    decorators = element("")
+
+    # header
+    name = text(node.name)
+    kwargs = [expression.render(kwarg) for kwarg in node.keywords]
+    args = [expression.render(arg) for arg in node.bases]
+    if kwargs or args:
+        arguments = html.items("comma-sep row", "row gap", [*kwargs, *args])
+        arguments = element("parens row", arguments)
+    else:
+        arguments = element("")
+    header = element("row", name, arguments)
+    header = element("class-prefix row gap", header)
+    header = element("row colon-suffix", header)
+
+    # body
+    body = [render(stmt) for stmt in node.body]
+    body = element("block", *body)
+
+    yield from element("class", decorators, header, body)
+
 
 @register_node
 def render_return(node: ast.Return):
