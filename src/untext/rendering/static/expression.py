@@ -123,16 +123,18 @@ def render(node: ast.expr):
             raise ValueError(f"Unexpected ast expression type: {type(node)}")
 
 
+"""
+AST expression rendering
 
+(implementation for each type)
+"""
+
+
+@register_node
 def render_boolop(node: ast.BoolOp):
-    yield from element("bg-red", text("boolop"))
-    return
-    elt = add_node(parent, node, "row gap")
-    elt.classes.append(f"{read_boolop(node.op)}-sep")
-    for v in node.values:
-        # add(..., "row") is a wrapper required by the {op}-sep separator
-        render(add(elt, "row gap"), v)
-    return elt
+    values = [render(v) for v in node.values]
+    result = html.items(f"row gap {read_boolop(node.op)}-sep", "row gap", values)
+    yield from result
 
 
 """
