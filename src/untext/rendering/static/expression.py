@@ -55,7 +55,7 @@ import html
 import json
 
 #from untext.rendering.html import register, div, add_node, add, add_text, add_pre
-from .html import node, text, element, debug, register_node
+from .html import text, element, debug, register_node, div
 from . import html
 
 
@@ -137,6 +137,16 @@ def render_boolop(node: ast.BoolOp):
     yield from result
 
 
+# part of render_boolop
+def read_boolop(op: ast.boolop):
+    if isinstance(op, ast.And):
+        return "and"
+    elif isinstance(op, ast.Or):
+        return "or"
+    else:
+        raise NotImplementedError(f"unknown boolean operator: {op}")
+
+
 """
 this code uses html data-attributes to encode the operator, and css to render it dynamically
 
@@ -153,6 +163,20 @@ in practice, css support is lacking, so we need this:
 </div>
 """
 def render_binop(node: ast.BinOp):
+
+    left = render(node.left)
+    right = render(node.right)
+    # TODO: find better abstractions
+    # currently, using data attributes can only be done with div()
+    right = div(right,
+                classes="row gap",
+                attr={"operator": read_binaryop(node.op)})
+
+    result = element("operation row gap bg-red", left, right)
+    yield from result
+    return
+
+
     yield from element("bg-red", text("binop"))
     return
     elt = add_node(parent, node, "operation row gap")
@@ -239,15 +263,6 @@ def read_unaryop(op: ast.unaryop):
 
 
 
-
-
-def read_boolop(op: ast.boolop):
-    if isinstance(op, ast.And):
-        return "and"
-    elif isinstance(op, ast.Or):
-        return "or"
-    else:
-        raise NotImplementedError(f"unknown boolean operator: {op}")
 
 
 def render_ifexp(node: ast.IfExp):
