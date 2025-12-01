@@ -162,8 +162,8 @@ in practice, css support is lacking, so we need this:
   <div class="operand">b</div>
 </div>
 """
+@register_node
 def render_binop(node: ast.BinOp):
-
     left = render(node.left)
     right = render(node.right)
     # TODO: find better abstractions
@@ -172,39 +172,9 @@ def render_binop(node: ast.BinOp):
                 classes="row gap",
                 attr={"operator": read_binaryop(node.op)})
 
-    result = element("operation row gap bg-red", left, right)
+    result = element("operation row gap", left, right)
     yield from result
-    return
 
-
-    yield from element("bg-red", text("binop"))
-    return
-    elt = add_node(parent, node, "operation row gap")
-    elt.attributes["data-operator"] = read_binaryop(node.op)
-    operator_suffixed = add(elt, "row gap op-suffixed")
-    # note: setting css variables from the DOM API is a pain
-    # recent versions of pywebview do not have the same syntax for setting css properties
-
-    # this code works in every version, but very ugly
-    #webview.windows[1].evaluate_js(f"""
-    #document.getElementById('{node.node_id}').style.setProperty('--operator', '"+"')
-    #""")
-
-    # this does NOT work in cpython with apt-packaged pywebview, but almost
-    #operator_suffixed.style["--operator"] = f'\\"{read_binaryop(node.op)}\\"'
-
-    # this works in pypy with pip-packaged pywebview, but pywebview is complicated to install without distro packaging
-    #operator_suffixed.style["--operator"] = json.dumps(f'"{read_binaryop(node.op)}"')
-
-    # the easy solution is to never set css variables from python:
-    left = render(elt, node.left)
-    operator_prefixed = add(elt, "row gap")
-    operator_prefixed.attributes["data-operator"] = read_binaryop(node.op)
-    right = render(operator_prefixed, node.right)
-    #operator_suffixed.attributes["data-operator"] = read_binaryop(node.op)
-    #left = render(operator_suffixed, node.left)
-    #right = render(add(elt, "row gap"), node.right)
-    return elt
 
 def read_binaryop(op: ast.operator):
     # css classes cannot have special characters like +
