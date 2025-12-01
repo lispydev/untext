@@ -522,12 +522,9 @@ def render_starred(node: ast.Starred):
     render(elt, node.value)
     return elt
 
+@register_node
 def render_name(node: ast.Name):
-    yield from element("bg-red", text("name"))
-    return
-    elt = add_node(parent, node, "symbol")
-    elt.text = node.id
-    return elt
+    yield from element("symbol", text(node.id))
 
 def render_list(node: ast.List):
     yield from element("bg-red", text("list"))
