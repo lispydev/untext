@@ -556,39 +556,29 @@ def render_elifs(if_node: ast.If):
     yield from element("elif", *blocks)
 
 
+@register_node
 def render_with(node: ast.With):
-    yield from element("bg-red", text("with"))
-    return
     assert node.type_comment is None
-    elt = add_node(parent, node)
-    # this breaks if newlines are added for clarity:
-    #header = elt.append("""<div class="with-prefix colon-suffix row gap"></div>""")
-    header = add(elt)
-    colon_suffixed = add(header, "row colon-suffix")
-    header_content = add(colon_suffixed, "with-prefix row gap")
-    #print(header)
-    body = add(elt, "block")
-    for item in node.items:
-        render_withitem(header_content, item)
-    for stmt in node.body:
-        render(body, stmt)
-    return elt
+    assert len(node.items) == 1  # TODO: test with more cases
+    items = [render_withitem(item) for item in node.items]
+    body = [render(stmt) for stmt in node.body]
+    block = element("block", *body)
+    header = element("with-prefix row gap", *items)
+    header = element("row colon-suffix", header)
+    yield from element("with", header, block)
 
+
+@register_node
 def render_withitem(node: ast.withitem):
-    yield from element("bg-red", text("withitem"))
-    return
-    elt = add_node(parent, node)
     if node.optional_vars:
-        # add "<expr> as <name>"
-        named = add(elt, "as-sep row gap")
-        expr = expression.render(add(named, "row gap"), node.context_expr)
-        name = expression.render(add(named, "row gap"), node.optional_vars)
+        # "<expr> as <name>"
+        expr = expression.render(node.context_expr)
+        name = expression.render(node.optional_vars)
+        item = html.items("as-sep row gap", "row gap", [expr, name])
     else:
-        # just add <expr>
-        unnamed = add(elt)
-        expr = expression.render(unnamed, node.context_expr)
-    return elt
-
+        # just "<expr>"
+        item = expression.render(node.context_expr)
+    yield from element("with-item", item)
 
 
 def render_match(node: ast.Match):
