@@ -677,13 +677,10 @@ def render_raise(node: ast.Raise):
 
 
 def render_assert(node: ast.Assert):
-    yield from element("bg-red", text("assert"))
-    return
     # TODO: support assertion messages
     assert node.msg is None
-    elt = add_node(parent, node, "assert-prefix gap row")
-    expression.render(elt, node.test)
-    return elt
+    asserted = expression.render(node.test)
+    yield from element("assert assert-prefix row gap", asserted)
 
 
 # TODO: rewrite
