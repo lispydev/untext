@@ -68,7 +68,7 @@ def class_attr(classes: Classes) -> HTMLGenerator:
 
 def data_attr(attr: dict) -> HTMLGenerator:
     # " data-...='...'"
-    for key, val in attr:
+    for key, val in attr.items():
         yield " data-"
         yield key
         yield "='"
