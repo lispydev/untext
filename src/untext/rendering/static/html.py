@@ -66,17 +66,28 @@ def class_attr(classes: Classes) -> HTMLGenerator:
         yield " ".join(classes)
     yield "'"
 
+def data_attr(attr: dict) -> HTMLGenerator:
+    # " data-...='...'"
+    for key, val in attr:
+        yield " data-"
+        yield key
+        yield "='"
+        yield val
+        yield "'"
+
 
 # main way of generating html
 # we use a div soup because writing wrappers for every
 # html tag adds complexity for no benefit
-def div(*items: HTML, id=None, classes: Classes = []) -> HTMLGenerator:
+def div(*items: HTML, id=None, classes: Classes = [], attr: dict = {}) -> HTMLGenerator:
     # <div {id} {class}>{items}</div>
     yield "<div"
     if id is not None:
         yield from id_attr(id)
     if classes:
         yield from class_attr(classes)
+    if data_attr:
+        yield from data_attr(attr)
     yield ">"
     for x in items:
         yield from x
