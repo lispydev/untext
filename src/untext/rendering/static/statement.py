@@ -670,13 +670,10 @@ def render_match_as(node: ast.MatchAs):
 
 
 def render_raise(node: ast.Raise):
-    yield from element("bg-red", text("raise"))
-    return
     # TODO: check if support for this attribute is needed
     assert node.cause is None
-    elt = add_node(parent, node, "raise-prefix row gap")
-    expression.render(elt, node.exc)
-    return elt
+    raised = expression.render(node.exc)
+    yield from element("raise raise-prefix row gap", raised)
 
 
 def render_assert(node: ast.Assert):
