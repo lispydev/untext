@@ -211,12 +211,11 @@ def read_binaryop(op: ast.operator):
 # (operators have semantic meaning, they are not just syntax)
 # (keep the css for infix inlining if needed)
 def render_unaryop(node: ast.UnaryOp):
-    yield from element("bg-red", text("unaryop"))
-    return
-    elt = add_node(parent, node, "row")
-    op = add(elt, text=read_unaryop(node.op))
-    value = render(elt, node.operand)
-    return elt
+    value = render(node.operand)
+    op = read_unaryop(node.op)
+    yield from div(value,
+                   classes="unary-operation row gap",
+                   attr={"operator": op})
 
 
 def read_unaryop(op: ast.unaryop):

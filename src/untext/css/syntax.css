@@ -216,3 +216,6 @@ In the meantime, we still set the data-operator attribute on the .operation Elem
   content: attr(data-operator);
 }
 
+.unary-operation::before {
+	content: attr(data-operator);
+}
