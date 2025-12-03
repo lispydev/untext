@@ -322,19 +322,20 @@ def render_yieldfrom(node):
 
 
 def render_compare(node: ast.Compare):
-    yield from element("bg-red", text("compare"))
-    return
     # in python, comparisons can be complex sequences, like:
     # 1 < x < y < 6
     # 1 is called left
     # the operators are [<, <, <]
     # and the comparators are [x, y, 6]
-    elt = add_node(parent, node, "compare row gap")
-    left = render(elt, node.left)
+    left = render(node.left)
+    elts = [left]
     for op, cmp in zip(node.ops, node.comparators):
-        add(elt, text=read_op(op))
-        render(elt, cmp)
-    return elt
+        op = text(read_op(op))
+        cmp = render(cmp)
+        elts.append(op)
+        elts.append(cmp)
+    yield from element("compare row gap", *elts)
+
 
 def read_op(op: ast.operator):
     if isinstance(op, ast.Eq):
