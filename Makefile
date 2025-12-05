@@ -83,11 +83,16 @@ test_wheel_prod: clean-tests --setup_test_env
 # cython/pyinstaller packaging tasks
 
 pyinstall:
-	# TODO
-	./build_venv
+	# multi-file build is faster to start, when testing
+	#./build_venv/bin/pyinstaller src/pyinstall_main.py --add-data src/untext/css/:untext/css
+	./build_venv/bin/pyinstaller src/pyinstall_main.py --add-data src/untext/css/:untext/css --onefile
+	# cleanup
+	rm -r build
+	mv dist/pyinstall_main ./untext
+
 
 cython:
+	#./build_venv/bin/cythonize -i untext/rendering/dynamic/dom.py
 	# TODO
-	./build_venv
 
 
