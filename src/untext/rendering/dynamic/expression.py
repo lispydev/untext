@@ -248,6 +248,7 @@ def render_ifexp(parent: Element, node: ast.IfExp) -> Element:
 
 
 # TODO: test with more kinds of literals
+# (currently only tested for empty dictionaries)
 def render_dict(parent: Element, node: ast.Dict):
     # TODO: multi-line rendering:
     # ... {
@@ -263,9 +264,9 @@ def render_dict(parent: Element, node: ast.Dict):
         assert k is not None
         v = node.values[i]
         key = add(items, "row colon-suffix")
-        expression.render(key)
+        render(key, k)
         value = add(items)
-        expression.render(value, v)
+        render(value, v)
 
 
 def render_list_comprehension(parent: Element, node: ast.ListComp) -> Element:
