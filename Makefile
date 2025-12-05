@@ -1,5 +1,12 @@
 .PHONY: build_prepare build push testpush test_wheel_local test_wheel test_wheel_prod clean-tests
 
+
+#####
+
+
+# pip packaging tasks
+
+
 # prepare a build environment
 # build: builds wheel and sdist output
 # twine: upload to pypi
@@ -19,6 +26,11 @@ push:
 # push the wheel to test.pypi.org
 testpush:
 	./build_venv/bin/python -m twine upload --repository testpypi dist/*
+
+
+####
+
+# wheel test tasks
 
 
 # make a venv with the latest built wheel installed
@@ -61,3 +73,21 @@ test_wheel_prod: clean-tests --setup_test_env
 	@echo "Untext is installed in the test_venv virtual environment."
 	@echo "You will not be able to run it unless you have a working pywebview set up."
 	@echo "You can test pywebview with ./test_venv/bin/python -m untext.webview_test"
+
+
+
+
+#######
+
+
+# cython/pyinstaller packaging tasks
+
+pyinstall:
+	# TODO
+	./build_venv
+
+cython:
+	# TODO
+	./build_venv
+
+
