@@ -91,8 +91,24 @@ pyinstall:
 	mv dist/pyinstall_main ./untext
 
 
-cython:
-	#./build_venv/bin/cythonize -i untext/rendering/dynamic/dom.py
-	# TODO
+src := rendering/dynamic/statement.py \
+       rendering/dynamic/dom.py \
+       rendering/dynamic/expression.py \
+       rendering/static/expression.py \
+       rendering/static/html.py \
+       rendering/static/statement.py \
+       main.py
+
+src := $(addprefix src/untext/, $(src))
+
+so := $(src:.py=.so)
+
+src/untext/%.so: src/untext/%.py
+	./build_venv/bin/cythonize -i $< #-3
+
+cython: $(so)
+	# cleanup:
+	find src/untext/ -name "*.c" -delete
+	find src/untext/ -name "*.so" -delete
 
 
