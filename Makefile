@@ -137,15 +137,11 @@ clean-cython:
 
 
 pyinstall-cython: clean-cython cython
-	# build the main file with cython too
-	# TODO: move in the main src var
-	./build_venv/bin/cythonize -i src-cython/pyinstall_main.py #-3
+	# note: 
 	# --hidden-import <import path> can be used to add the dependencies that pyinstaller cannot see inside cython files
 	# the imports can also be added in src/pyinstall_main.py to expose them to pyinstaller; so long as this file itself is not compiled with cython
-	# multi-file build is faster to start, when testing
-	./build_venv/bin/pyinstaller src-cython/pyinstall_main.py --add-data src-cython/untext/css/:untext/css --hidden-import pywebview --hidden-import webview --hidden-import code --hidden-import untext.rendering.dynamic.statement --hidden-import untext.rendering.dynamic.expression --hidden-import untext.rendering.static --onefile
+	./build_venv/bin/pyinstaller src-cython/pyinstall_main.py --add-data src-cython/untext/css/:untext/css --onefile
 	# cleanup
-	rm -r build
 	mv dist/pyinstall_main ./untext
 
 
