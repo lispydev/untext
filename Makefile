@@ -140,13 +140,7 @@ package: clean-cython cython
 	# note: 
 	# --hidden-import <import path> can be used to add the dependencies that pyinstaller cannot see inside cython files
 	# the imports can also be added in src/pyinstall_main.py to expose them to pyinstaller; so long as this file itself is not compiled with cython
-	# note:
-	# building without --onefile is faster and gives much faster boot times
-	# building with --onefile gives properly packaged binaries
-	# for the end user, having faster start times is preferable to having a single file
-	./build_venv/bin/pyinstaller src-cython/pyinstall_main.py --add-data src-cython/untext/css/:untext/css #--onefile
-	# single file:
-	#mv dist/pyinstall_main ./untext
+	./build_venv/bin/pyinstaller src-cython/pyinstall_main.py --add-data src-cython/untext/css/:untext/css
 	# multi file:
 	mv dist/pyinstall_main untext
 	tar -cvfz untext.tar.gz untext
