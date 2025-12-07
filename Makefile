@@ -1,4 +1,23 @@
-.PHONY: build_prepare build push testpush test_wheel_local test_wheel test_wheel_prod clean-tests cython pyinstall clean-cython
+# tasks used by the user:
+# build_prepare: prepare the build venv used when running other tasks
+# build: build a new wheel in dist/
+# push: upload wheel to pypi
+# package: package the app with pyinstaller and cython, under ./untext.tar.gz
+#
+# additional tasks used in development:
+# test_wheel_local: create a test venv with the wheel built in dist/
+# testpush: upload wheel to test.pypi
+# package_onefile: package the app as a single file, under ./untext
+# package_python: same, but skip the cython build step
+#
+# clean commands:
+# clean-tests: clean the test venv
+# clean-package: clean packaged build artifacts
+# clean-cython: clean temporary cython compiled files
+
+
+
+.PHONY: build_prepare build push testpush test_wheel_local test_wheel_test test_wheel_prod clean-tests prepare_cython clean-package clean-cython cython package_python package package_onefile
 
 
 #####
@@ -59,7 +78,7 @@ clean-tests:
 # these test tasks were useful during the initial packaging setup, but are not really used anymore since test_wheel_local gives the same behavior
 
 # same as test_wheel_local, but download the wheel from test.pypi.org
-test_wheel: clean-tests --setup_test_env
+test_wheel_test: clean-tests --setup_test_env
 	#./test_venv/bin/pip install --index-url https://test.pypi.org/simple --no-deps untext
 	./test_venv/bin/pip install --index-url https://test.pypi.org/simple untext
 	#./test_venv/bin/pip install untext
@@ -82,8 +101,8 @@ test_wheel_prod: clean-tests --setup_test_env
 
 # cython/pyinstaller packaging tasks
 
-# not used anymore; was used before finalizing the pyinstaller+cython build process
-pyinstall_python:
+# not used anymore; can still be used for quick tests
+package_python:
 	# multi-file build is faster to start, when testing
 	#./build_venv/bin/pyinstaller src/pyinstall_main.py --add-data src/untext/css/:untext/css
 	./build_venv/bin/pyinstaller src/pyinstall_main.py --add-data src/untext/css/:untext/css --onefile
@@ -95,6 +114,8 @@ pyinstall_python:
 prepare_cython:
 	cp -r src/ src-cython
 
+clean-cython:
+	rm -rf src-cython
 
 src := rendering/dynamic/statement.py \
        rendering/dynamic/dom.py \
@@ -132,19 +153,26 @@ cython: prepare_cython $(so)
 	rm src-cython/untext/rendering/static/html.py
 	rm src-cython/untext/main.py
 
-clean-cython:
-	rm -r src-cython
 
 
-package: clean-cython cython
-	# note: 
-	# --hidden-import <import path> can be used to add the dependencies that pyinstaller cannot see inside cython files
-	# the imports can also be added in src/pyinstall_main.py to expose them to pyinstaller; so long as this file itself is not compiled with cython
+clean-package:
+	rm -f untext.tar.gz
+	rm -rf untext
+
+# not bundling to a single file gives faster boot times
+package: clean-cython clean-package cython
 	./build_venv/bin/pyinstaller src-cython/pyinstall_main.py --add-data src-cython/untext/css/:untext/css
-	# multi file:
-	mv dist/pyinstall_main untext
-	tar -cvfz untext.tar.gz untext
+	# some files are bundled by pyinstaller without being actually needed
+	# TODO: build in a docker container without the bloat of my personal computer
+	rm -r dist/pyinstall_main/_internal/share
+	mv dist/pyinstall_main dist/untext
+	mv dist/untext/pyinstall_main dist/untext/untext
+	cd dist && tar -czf untext.tar.gz untext
+	mv dist/untext.tar.gz ./
+	rm -r dist/untext
 
-
-
+# used for testing (single files are easier to move around)
+package_onefile: clean-cython clean-package cython
+	./build_venv/bin/pyinstaller src-cython/pyinstall_main.py --add-data src-cython/untext/css/:untext/css --onefile
+	mv dist/pyinstall_main ./untext
 
