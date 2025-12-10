@@ -219,3 +219,13 @@ In the meantime, we still set the data-operator attribute on the .operation Elem
 .unary-operation::before {
 	content: attr(data-operator);
 }
+
+
+/* string literals */
+/* <pre> does not work because it breaks the flex layout */
+.string-literal {
+	font-family: monospace; /* help see spaces in string literals */
+	white-space: pre-wrap; /* keep spaces but allow wrapping (multiline) */
+	overflow-wrap: anywhere; /* avoids breaking flex*/
+}
+

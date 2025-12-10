@@ -51,11 +51,11 @@ expr = BoolOp(boolop op, expr* values)
 from webview.dom.element import Element
 import ast
 
-import html
+import html as pyhtml
 import json
 
 #from untext.rendering.html import register, div, add_node, add, add_text, add_pre
-from .html import text, element, debug, register_node, div
+from .html import text, element, debug, register_node, div, pre
 from . import html
 
 
@@ -427,49 +427,24 @@ def render_joinedstr(node: ast.JoinedStr):
     return elt
 
 
+@register_node
 def render_constant(node: ast.Constant):
-    yield from element("bg-red", text("constant"))
-    return
     assert node.kind is None
-    elt = add_node(parent, node, "literal")
-    # TODO: test very carefully
-    # string rendering is very fragile, due to pywebview doing a double eval with JS code execution
-    # also make sure to check html escaping
-    # and make sure that the code works in later versions with pypy
-    # TODO: centralize string escaping to prevent debugging the same bugs in other places (f-strings, comparisons,...)
-
-    # tools available:
-    # -html.escape(), already done by pywebview
-    # -json.dumps(), for JS quotes escaping (repr will not work)
-    # -double escaping for the rest: .replace("\\", "\\\\")
 
     if isinstance(node.value, str):
-        # TODO: use the DOM to encode constant types
-        # TODO: render multiline ("\n") strings with the multiline syntax if they are top-level in the module
-
-        # text = json.dumps(node.value)
-        # pywebview uses JS eval to do things, which seems to break newline and quote escaping
-        #text = json.dumps(node.value).replace("\\", "\\\\")
-        # new fix imported from f-string (JoinedStr) tests
-        str_text = json.dumps(node.value).replace("\\", "\\\\").replace("'", "\\'")
-        elt.text = str_text
-        # TODO: format multiline strings differently (""" """)
-        # does not work:
-        # (js eval replaces escaped "\n" by \n)
-        #text = json.dumps(node.value).replace("'", "\\'")
-        # remove quotes
-        #text = text[1:-1]
-        #if "\\n" in text:
-        #    c = "triple-quotes"
-        #else:
-        #    c = "quotes"
-        #pre = add_pre(elt, text)
-        #pre.classes.append("bg-red")
-        #elt.classes.append(c)
+        # TODO: test with multiline strings,
+        # make it work with the DOM renderer,
+        # and refactor into a function
+        str_text = pyhtml.escape(json.dumps(node.value))
+        txt = element("string-literal", text(str_text))
+        const = div(txt, classes="literal", attr={"const-type": "str"})
     else:
-        elt.text = repr(node.value)
-        #print(elt.text)
-    return elt
+        typename = type(node.value).__name__
+        value_text = text(repr(node.value))
+        const = div(value_text,
+                  classes="literal",
+                  attr={"const-type": typename})
+    yield from element("constant", const)
 
 
 @register_node

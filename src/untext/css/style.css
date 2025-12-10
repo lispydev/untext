@@ -55,3 +55,9 @@ pre {
   /*font-size: 1em;*/ /* reset font size to the default */
 }
 
+/*pre {
+  display: flex;
+  flex-direction: row;
+  background-color: rgba(0, 200, 0, 0.5);
+}
+*/
