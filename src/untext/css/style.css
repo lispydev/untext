@@ -45,19 +45,3 @@ div {
   background-color: rgba(200, 0, 0, 0.5);
 }
 
-/* reset the style of <pre> tag */
-pre {
-  margin: 0;
-  font: inherit;
-  /*display: flex;
-  flex-direction: column;*/
-  /*padding: 0;*/
-  /*font-size: 1em;*/ /* reset font size to the default */
-}
-
-/*pre {
-  display: flex;
-  flex-direction: row;
-  background-color: rgba(0, 200, 0, 0.5);
-}
-*/

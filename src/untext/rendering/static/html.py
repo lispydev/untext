@@ -112,14 +112,6 @@ def element(classes: Classes, *items: HTML) -> HTMLGenerator:
     yield from div(classes=classes, *items)
 
 
-# TODO: use for string literals (spaces and newlines must be displayed)
-def pre(text: str) -> HTMLGenerator:
-    # <pre>{text}</div>
-    yield "<pre>"
-    yield text
-    yield "</div>"
-
-
 # def block(html=""):
 #     return f"<div class='block'>{html}</div>"
 #

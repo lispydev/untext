@@ -55,7 +55,7 @@ import html as pyhtml
 import json
 
 #from untext.rendering.html import register, div, add_node, add, add_text, add_pre
-from .html import text, element, debug, register_node, div, pre
+from .html import text, element, debug, register_node, div
 from . import html
 
 
