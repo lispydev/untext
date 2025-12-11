@@ -490,24 +490,26 @@ def render_list(node: ast.List):
     yield from element("list brackets row", elts)
 
 
+@register_node
 def render_tuple(node: ast.Tuple):
-    yield from element("bg-red", text("tuple"))
-    return
     #print(node.ctx)
-    elt = add_node(parent, node, "parens row")
+    # TODO: cleanup this branching
     if len(node.elts) == 0:
-        pass
-    elif len(node.elts) == 1:
+        yield from element("tuple parens row")
+        return
+    if len(node.elts) == 1:
         # display a single item with a comma after it
-        comma_separated = add(elt, "comma-sep row")
-        render(add(comma_separated, "row"), node.elts[0])
+        expr = render(node.elts[0])
         # empty element for the comma
-        add(comma_separated)
+        empty_elt = element()
+        comma_separated = html.items("comma-sep row", "row", [expr, empty_elt])
+        yield from element("tuple parens row", comma_separated)
+        return
     else:
-        comma_separated = add(elt, "comma-sep row")
-        for x in node.elts:
-            render(add(comma_separated, "row gap"), x)
-    return elt
+        elts = [render(e) for e in node.elts]
+        elts = html.items("comma-sep row", "row gap", elts)
+        yield from element("tuple parens row", elts)
+        return
 
 
 def render_slice(node: ast.Slice):
