@@ -383,9 +383,8 @@ def render_keyword_arg(node: ast.keyword):
     yield from html.items("keyword-argument equal-sep row", "row", [kw, val])
 
 
+@register_node
 def render_formatted_value(node: ast.FormattedValue):
-    yield from element("bg-red", text("formatted_value"))
-    return
     # TODO: support other conversion types:
     # -1: unspecified (default is str())
     # 97: !a, ascii
@@ -395,9 +394,8 @@ def render_formatted_value(node: ast.FormattedValue):
     # can be a nested JoinedStr instead of None
     # TODO: support this attribute
     assert node.format_spec is None
-    elt = add_node(parent, node)
-    render(elt, node.value)
-    return elt
+    expr = render(node.value)
+    yield from element("f-value", expr)
 
 
 # f"{x}<text>{y}"
