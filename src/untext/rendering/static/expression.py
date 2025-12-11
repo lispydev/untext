@@ -233,7 +233,6 @@ def read_unaryop(op: ast.unaryop):
 
 @register_node
 def render_ifexp(node: ast.IfExp):
-
     test = render(node.test)
 
     if_expr = render(node.body)
@@ -460,13 +459,11 @@ def render_subscript(node: ast.Subscript):
     yield from element("subscript row", indexed, bracketed)
 
 
+@register_node
 def render_starred(node: ast.Starred):
-    yield from element("bg-red", text("starred"))
-    return
-    #print(node.ctx)
-    elt = add_node(parent, node, "star-prefix row")
-    render(elt, node.value)
-    return elt
+    expr = render(node.value)
+    yield from element("starred star-prefix row", expr)
+
 
 @register_node
 def render_name(node: ast.Name):
