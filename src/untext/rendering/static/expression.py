@@ -279,36 +279,34 @@ def render_dict(node: ast.Dict):
         expression.render(value, v)
 
 
+@register_node
 def render_list_comprehension(node: ast.ListComp):
-    yield from element("bg-red", text("list_comprehension"))
-    return
-    elt = add_node(parent, node, "brackets row")
-    spaced_content = add(elt, "row gap")
-    selected = render(spaced_content, node.elt)
     # TODO: test with more than 1 generator
-    generators = add(spaced_content, "row gap")
+    generators = []
     for g in node.generators:
-        expr = render_comprehension_generator(generators, g)
-    return elt
+        generators.append(render_comprehension_generator(g))
+    elt = render(node.elt)
+    generators = element("row gap", *generators)
+    content = element("row gap", elt, generators)
+    yield from element("list-comprehension brackets row", content)
 
+
+@register_node
 def render_comprehension_generator(node: ast.comprehension):
-    yield from element("bg-red", text("comprehension_generator"))
-    return
     # TODO: support async
     assert node.is_async == 0
 
-    elt = add_node(parent, node, "for-prefix row gap")
-    # need a wrapper (row gap is the interaction with the in suffix) for in-sep
-    generator = add(elt, "in-sep row gap")
-    target = render(add(generator, "row gap"), node.target)
-    it = render(add(generator, "row gap"), node.iter)
-
-    conditions = add(elt, "row gap")
+    conds = []
     for cond in node.ifs:
-        condition = add(conditions, "if-prefix row gap")
-        render(condition, cond)
+        cond = render(cond)
+        conds.append(cond)
+    conds = html.items("row gap", "if-prefix row gap", conds)
 
-    return elt
+    target = render(node.target)
+    iterated = render(node.iter)
+    generator = html.items("in-sep row gap", "row gap", [target, iterated])
+    yield from element("comprehension-generator for-prefix row gap", generator)
+
 
 
 # TODO: implement
@@ -483,6 +481,8 @@ def render_starred(node: ast.Starred):
 def render_name(node: ast.Name):
     yield from element("symbol", text(node.id))
 
+
+@register_node
 def render_list(node: ast.List):
     assert isinstance(node.ctx, ast.Load)
     elts = [render(x) for x in node.elts]
