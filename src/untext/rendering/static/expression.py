@@ -402,29 +402,31 @@ def render_formatted_value(node: ast.FormattedValue):
 
 # f"{x}<text>{y}"
 # f-"-({(<x>)}-(<json-encoded text>)-({<y>}))-"
+# TODO: remove unneeded .string-literal classes
+@register_node
 def render_joinedstr(node: ast.JoinedStr):
-    yield from element("bg-red", text("joinedstr"))
-    return
-    elt = add_node(parent, node, "row f-prefix")
-    quoted = add(elt, "quotes row")
+    parts = []
     for e in node.values:
         if isinstance(e, ast.FormattedValue):
-            braced = add(quoted, "braces row")
-            render(braced, e)
+            e = render(e)
+            braced = element("braces row", e)
+            string_styled = element("string-literal", braced)
+            parts.append(string_styled)
         else:
             assert isinstance(e, ast.Constant)
             assert isinstance(e.value, str)
-            # quotes are replaced because pywebview runs f"elt.textContent = '{text}'"
-            # which breaks if there is a single quote in the string
-            # and needs a second layer of escaping for everything that is escaped
-            # TODO: merge with literal string formatting
-            str_text = json.dumps(e.value).replace("\\", "\\\\").replace("'", "\\'")
+            str_text = html_serialize_str(e.value)
             # remove quotes (and let the css quotes surround the whole f-string)
-            str_text = str_text[1:-1]
-            #add(quoted, text=text)
-            pre = add_pre(quoted, text=str_text)
-            #parts.append(e.value)
-    return elt
+            # quotes are converted to "&quot;" by html_serialize_str
+            str_text = str_text[6:-6]
+            # TODO: see if string-literal is better for the whole f-string
+            txt = text(str_text)
+            txt = element("string-literal", txt)
+            parts.append(txt)
+
+    quoted = element("quotes row", *parts)
+    string_styled = element("string-literal", quoted)
+    yield from element("row f-prefix", string_styled)
 
 
 @register_node
@@ -435,7 +437,7 @@ def render_constant(node: ast.Constant):
         # TODO: test with multiline strings,
         # make it work with the DOM renderer,
         # and refactor into a function
-        str_text = pyhtml.escape(json.dumps(node.value))
+        str_text = html_serialize_str(node.value)
         txt = element("string-literal", text(str_text))
         const = div(txt, classes="literal", attr={"const-type": "str"})
     else:
@@ -447,6 +449,11 @@ def render_constant(node: ast.Constant):
     yield from element("constant", const)
 
 
+# used by render_constant and render_joinedstr
+def html_serialize_str(txt: str) -> str:
+    return pyhtml.escape(json.dumps(txt))
+
+
 @register_node
 def render_attribute(node: ast.Attribute):
     obj = render(node.value)
@@ -455,17 +462,15 @@ def render_attribute(node: ast.Attribute):
     yield from row
 
 
+@register_node
 def render_subscript(node: ast.Subscript):
-    yield from element("bg-red", text("subscript"))
-    return
     # node.ctx is either ast.Load or ast.Store
     # Store if the subscript is in a left side of an assignment
     # Load if the subscript is in an expression to evaluate
-    elt = add_node(parent, node, "row")
-    indexed = render(elt, node.value)
-    bracketed = add(elt, "brackets row")
-    index = render(bracketed, node.slice)
-    return elt
+    index = render(node.slice)
+    bracketed = element("brackets row", index)
+    indexed = render(node.value)
+    yield from element("subscript row", indexed, bracketed)
 
 
 def render_starred(node: ast.Starred):
@@ -513,6 +518,8 @@ def render_tuple(node: ast.Tuple):
 
 
 def render_slice(node: ast.Slice):
+    yield from element("bg-red", text("slice"))
+    return
     elt = add_node(parent, node)
     colon_split = add(elt, "row colon-sep")
     left = add(colon_split, "row")
