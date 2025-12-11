@@ -512,19 +512,15 @@ def render_tuple(node: ast.Tuple):
         return
 
 
+@register_node
 def render_slice(node: ast.Slice):
-    yield from element("bg-red", text("slice"))
-    return
-    elt = add_node(parent, node)
-    colon_split = add(elt, "row colon-sep")
-    left = add(colon_split, "row")
+    # a slice must have a left and right part separated by :, even if they are implicit
+    parts = [element("optional-slot"), element("optional-slot")]
     if node.lower is not None:
-        render(left, node.lower)
-    center = add(colon_split, "row")
+        parts[0] = render(node.lower)
     if node.upper is not None:
-        render(center, node.upper)
+        parts[1] = render(node.upper)
     if node.step is not None:
-        right = add(colon_split, "row")
-        render(right, node.step)
-    return elt
+        parts.append(render(node.step))
+    yield from html.items("slice row colon-sep", "row", parts)
 
