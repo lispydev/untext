@@ -484,15 +484,10 @@ def render_name(node: ast.Name):
     yield from element("symbol", text(node.id))
 
 def render_list(node: ast.List):
-    yield from element("bg-red", text("list"))
-    return
     assert isinstance(node.ctx, ast.Load)
-    elt = add_node(parent, node, "brackets row")
-    comma_separated = add(elt, "comma-sep row")
-    for x in node.elts:
-        comma_ended = add(comma_separated, "row gap")
-        render(comma_ended, x)
-    return elt
+    elts = [render(x) for x in node.elts]
+    elts = html.items("comma-sep row", "row gap", elts)
+    yield from element("list brackets row", elts)
 
 
 def render_tuple(node: ast.Tuple):
