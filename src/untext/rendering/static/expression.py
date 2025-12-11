@@ -233,26 +233,17 @@ def read_unaryop(op: ast.unaryop):
 
 @register_node
 def render_ifexp(node: ast.IfExp):
-    yield from element("bg-red", text("ifexp"))
-    return
-    # TODO: check order
-    test = render(node.test)
-    if_expr = render(node.body)
-    if_body = element("if-prefix row gap", if_expr)
-    else_expr = render(node.orelse)
-    else_body = element("else-prefix row gap", else_expr)
-    #condition = 
-    yield from element("bg-red", text("ifexp"))
-    return
-    elt = add_node(parent, node, "row gap")
-    condition = add(elt)
-    test = render(condition, node.test)
 
-    if_part = add(elt, "if-prefix row gap")
-    if_expr = render(if_part, node.body)
-    else_part = add(elt, "else-prefix row gap")
-    else_expr = render(else_part, node.orelse)
-    return elt
+    test = render(node.test)
+
+    if_expr = render(node.body)
+    if_part = element("if-prefix row gap", if_expr)
+
+    else_expr = render(node.orelse)
+    else_part = element("else-prefix row gap", else_expr)
+
+    if_expr = element("row gap", test, if_part, else_part)
+    yield from element("if-expression", if_expr)
 
 
 # TODO: test with more kinds of literals
