@@ -227,5 +227,8 @@ In the meantime, we still set the data-operator attribute on the .operation Elem
 	font-family: monospace; /* help see spaces in string literals */
 	white-space: pre-wrap; /* keep spaces but allow wrapping (multiline) */
 	overflow-wrap: anywhere; /* avoids breaking flex*/
+
+	/* in flex display, <div>   </div> will not render*/
+	display: inline;
 }
 
