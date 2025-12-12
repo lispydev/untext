@@ -819,9 +819,11 @@ class CodeWindow:
             css = resources.files("untext.css").joinpath(name).read_text()
             self.window.load_css(css)
         self.window.evaluate_js(self.api.js_init)
-        self.root = self.window.dom.create_element("<div id='root'></div>")
-        # will fail until the new renderer is complete
-        statement.render_module(self.root, self.tree)
+
+        # DOM-based rendering of the whole file
+        # (very slow on longer files, not worth using it here)
+        #self.root = self.window.dom.create_element("<div id='root'></div>")
+        #statement.render_module(self.root, self.tree)
 
 
 def main():
