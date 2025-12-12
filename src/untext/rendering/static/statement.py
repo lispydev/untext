@@ -745,13 +745,12 @@ def render_importfrom(node: ast.ImportFrom):
 
 
 
+@register_node
 def render_nonlocal(node: ast.Nonlocal):
-    yield from element("bg-red", text("nonlocal"))
-    return
-    elt = add_node(parent, node, "row gap nonlocal-prefix")
-    names = add(elt, "row comma-sep")
-    for name in node.names:
-        add(names, "row gap", name)
+    # TODO: test on multiple names (ex: nonlocal a, b, c)
+    names = [text(name) for name in node.names]
+    names = html.items("row comma-sep", "row gap", names)
+    yield from element("row gap nonlocal-prefix", names)
 
 
 def render_pass(node: ast.Pass):
