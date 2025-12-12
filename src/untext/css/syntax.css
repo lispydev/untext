@@ -225,7 +225,7 @@ In the meantime, we still set the data-operator attribute on the .operation Elem
 /* <pre> does not work because it breaks the flex layout */
 .string-literal {
 	font-family: monospace; /* help see spaces in string literals */
-	white-space: pre-wrap; /* keep spaces but allow wrapping (multiline) */
+	white-space: nowrap; /*pre-wrap;*/ /* keep spaces but allow wrapping (multiline) */
 	overflow-wrap: anywhere; /* avoids breaking flex*/
 
 	/* in flex display, <div>   </div> will not render*/
