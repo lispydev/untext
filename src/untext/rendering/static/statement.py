@@ -574,75 +574,68 @@ def render_withitem(node: ast.withitem):
     yield from element("with-item", item)
 
 
+@register_node
 def render_match(node: ast.Match):
-    yield from element("bg-red", text("match"))
-    return
-    elt = add_node(parent, node)
-    header = add(elt)
-    colon_suffix = add(header, "colon-suffix row")
-    match_prefix = add(colon_suffix, "match-prefix row gap")
-    matched_value = expression.render(match_prefix, node.subject)
+    matched = expression.render(node.subject)
+    header = element("match-prefix row gap", matched)
+    header = element("colon-suffix row", header)
 
-    cases = add(elt, "block")
-    for case in node.cases:
-        render_case(cases, case)
+    cases = [render_case(case) for case in node.cases]
+    cases = element("block", *cases)
 
-    return elt
+    yield from element("match", header, cases)
+
 
 # part of render_match
+@register_node
 def render_case(node: ast.match_case):
-    yield from element("bg-red", text("case"))
-    return
     # TODO: support more cases
     assert node.guard is None
-    elt = add_node(parent, node)
-    header = add(elt, "row colon-suffix")
-    content = add(header, "row gap case-prefix")
+    body = [render(stmt) for stmt in node.body]
+    body = element("block", *body)
     # turns out match patterns are not actually expressions,
     # despite having the same syntax
-    render_pattern(content, node.pattern)
+    pattern = render_pattern(node.pattern)
+    pattern = element("row gap case-prefix", pattern)
+    pattern = element("row colon-suffix", pattern)
+    yield from element("case", pattern, body)
 
-    body = add(elt, "block")
-    for stmt in node.body:
-        render(body, stmt)
 
 # TODO: implement missing cases
+@register_node
 def render_pattern(node: ast.pattern):
-    yield from element("bg-red", text("pattern"))
-    return
     match type(node):
         case ast.MatchValue:
-            return render_match_value(parent, node)
+            yield from render_match_value(node)
         case ast.MatchSingleton:
-            return render_match_singleton(parent, node)
+            yield from render_match_singleton(node)
         case ast.MatchSequence:
-            return render_match_sequence(parent, node)
+            yield from render_match_sequence(node)
         case ast.MatchMapping:
-            return render_match_mapping(parent, node)
+            yield from render_match_mapping(node)
         case ast.MatchClass:
-            return render_match_class(parent, node)
+            yield from render_match_class(node)
 
         case ast.MatchStar:
-            return render_match_star(parent, node)
+            yield from render_match_star(node)
 
         case ast.MatchAs:
-            return render_match_as(parent, node)
+            yield from render_match_as(node)
         case ast.MatchOr:
-            return render_match_or(parent, node)
+            yield from render_match_or(node)
 
         case default:
             raise ValueError(f"Unexpected match pattern type: {type(node)}")
 
 
+@register_node
 def render_match_value(node: ast.MatchValue):
-    yield from element("bg-red", text("match_value"))
-    return
-    elt = add_node(parent, node)
-    expression.render(elt, node.value)
+    expr = expression.render(node.value)
+    yield from element("match-value", expr)
 
+
+@register_node
 def render_match_as(node: ast.MatchAs):
-    yield from element("bg-red", text("match_as"))
-    return
     # TODO: support other cases
     # case [x] as y:
     # case default:     <--- the only kind used
@@ -650,12 +643,11 @@ def render_match_as(node: ast.MatchAs):
     # specific to case default:
     assert node.pattern is None
     assert node.name == "default"
-    elt = add_node(parent, node)
-    add_text(elt, node.name)
-    return elt
+    txt = text(node.name)
+    yield from element("match-as", txt)
 
 
-
+@register_node
 def render_raise(node: ast.Raise):
     # TODO: check if support for this attribute is needed
     assert node.cause is None
@@ -663,6 +655,7 @@ def render_raise(node: ast.Raise):
     yield from element("raise raise-prefix row gap", raised)
 
 
+@register_node
 def render_assert(node: ast.Assert):
     # TODO: support assertion messages
     assert node.msg is None
