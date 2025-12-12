@@ -429,20 +429,19 @@ def render_for(node: ast.For):
 
 
 
+@register_node
 def render_while(node: ast.While):
-    yield from element("bg-red", text("while"))
-    return
-    elt = add_node(parent, node)
-    header = add(elt, "colon-suffix row")
-    header_content = add(header, "while-prefix row gap")
-    test = expression.render(header_content, node.test)
-    body = add(elt, "block")
-    for stmt in node.body:
-        render(body, stmt)
+    test = expression.render(node.test)
+    header = element("while-prefix row gap", test)
+    header = element("colon-suffix row", header)
+
+    body = [render(stmt) for stmt in node.body]
+    body = element("block", *body)
+
     assert not node.orelse
     # if node.orelse:
-    #else_body = [render_statement(statement) for statement in node.orelse]
-    return elt
+    #else_body = [render(stmt) for stmt in node.orelse]
+    yield from element("while", header, body)
 
 
 @register_node
