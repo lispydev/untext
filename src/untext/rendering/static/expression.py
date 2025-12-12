@@ -245,28 +245,31 @@ def render_ifexp(node: ast.IfExp):
     yield from element("if-expression", if_expr)
 
 
-# TODO: test with more kinds of literals
+# TODO: test with more kinds of literals than "{}"
 def render_dict(node: ast.Dict):
-    yield from element("bg-red", text("dict"))
-    return
-
     # TODO: multi-line rendering:
     # ... {
     #     ....
     # }
     # for now: render on a single line
-    # TODO:
-    elt = add_node(parent, node, "row braces")
-    items = add(elt, "comma-sep")
+    rows = []
     for i in range(len(node.keys)):
         k = node.keys[i]
         # TODO: None is for **d unpacking
         assert k is not None
         v = node.values[i]
-        key = add(items, "row colon-suffix")
-        expression.render(key)
-        value = add(items)
-        expression.render(value, v)
+        key = render(k)
+        val = render(v)
+
+        key = element("row colon-suffix", key)
+        val = element("", val)
+
+        row = element("row gap", key, val)
+        rows.append(row)
+
+    items = html.items("comma-sep", "", rows)
+    result = element("row braces", items)
+    yield from element("dict", result)
 
 
 @register_node
