@@ -20,17 +20,16 @@
 .PHONY: build_prepare build push testpush test_wheel_local test_wheel_test test_wheel_prod clean-tests prepare_cython clean-package clean-cython cython package_python package package_onefile
 
 
-#####
+#######
 
 
 # pip packaging tasks
 
 
-# prepare a build environment
-# build: builds wheel and sdist output
-# twine: upload to pypi
-# mypy (and system packages): static analysis
+# prepare a build environment, with packages needed to build or push build artifacts
+# see build_requirements.txt for needed packages
 build_prepare:
+	# --system-site-packages is needed to access the system pywebview package during the pyinstaller bundling
 	python3 -m venv build_venv --system-site-packages
 	./build_venv/bin/pip install -r build_requirements.txt
 
@@ -47,7 +46,7 @@ testpush:
 	./build_venv/bin/python -m twine upload --repository testpypi dist/*
 
 
-####
+#######
 
 # wheel test tasks
 
