@@ -302,14 +302,16 @@ def render_comprehension_generator(node: ast.comprehension):
 
 
 
-# TODO: implement
-
+@register_node
 def render_yield(node):
-    yield from element("bg-red", text("yield"))
+    expr = render(node.value)
+    yield from element("yield yield-prefix row gap", expr)
 
 
+@register_node
 def render_yieldfrom(node):
-    yield from element("bg-red", text("yieldfrom"))
+    expr = render(node.value)
+    yield from element("yield-from yield-from-prefix row gap", expr)
 
 
 def render_compare(node: ast.Compare):

@@ -157,6 +157,14 @@
 	content: "del";
 }
 
+.yield-prefix::before {
+	content: "yield";
+}
+
+.yield-from-prefix::before {
+	content: "yield from";
+}
+
 
 
 /* separators */
