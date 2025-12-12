@@ -380,20 +380,14 @@ def render_assign(node: ast.Assign):
 # <node><gap><op>=<gap><node>
 # (<node> (<op>=) <node>)
 def render_augassign(node: ast.AugAssign):
-    yield from element("bg-red", text("augassign"))
-    return
-    elt = add_node(parent, node, "row gap")
-    target = expression.render(add(elt), node.target)
+    target = expression.render(node.target)
+    operator = text(expression.read_binaryop(node.op))
     # hack: add an empty div to force the = separator to render
     # TODO?: add a .equal-suffix css class
-    assign_operator = add(elt, "equal-sep row")
-    add(assign_operator, text=expression.read_binaryop(node.op))
-    add(assign_operator, "row")
-    #op = expression.read_binaryop(node.op)
-    #elt.classes.append(f"{op}-sep")
-    val = expression.render(add(elt), node.value)
-    return elt
-
+    empty = element("")
+    operator = html.items("equal-sep row", "row", [operator, empty])
+    val = expression.render(node.value)
+    yield from element("row gap", target, operator, val)
 
 
 @register_node
