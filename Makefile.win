@@ -1,0 +1,120 @@
+# simplified makefile to build on windows
+
+
+
+# tasks used:
+# build_prepare: prepare the build venv, as well as windows dependencies
+# package: package the app with pyinstaller and cython, under .\untext.zip
+#
+# clean commands:
+# clean-tests: clean the test venv
+# clean-package: clean packaged build artifacts
+# clean-cython: clean temporary cython compiled files
+
+
+#######
+
+# TODO: sort
+clean-venv:
+	rmdir /s /q build_venv
+
+# prepare a build environment, with packages needed to build or push build artifacts
+# see build_requirements.txt for needed packages
+build_prepare:
+	python3 -m venv build_venv
+	.\build_venv\Scripts\pip install -r build_requirements.txt
+	.\build_venv\Scripts\pip install pywebview
+
+
+# when something doesn't work, can try packaging with pure python to check if the problem comes from the cython build task
+# cmd.exe is used because move is a builtin batch command and make cannot find it
+package_python:
+	.\build_venv\Scripts\pyinstaller src\pyinstall_main.py --add-data src\untext\css:untext\css --onefile
+	rmdir /s /q build
+	cmd /C move .\dist\pyinstall_main.exe .\untext-python.exe
+
+
+
+#######
+# cython\pyinstaller packaging tasks
+
+prepare_cython:
+	xcopy src src-cython /e /s /i
+
+clean-cython:
+	- rmdir /s /q src-cython
+
+src := rendering/dynamic/statement.py \
+       rendering/dynamic/dom.py \
+       rendering/dynamic/expression.py \
+       rendering/static/expression.py \
+       rendering/static/html.py \
+       rendering/static/statement.py \
+       main.py
+
+
+# test mode; try without the files that cannot currently be compiled by cython
+src := rendering/dynamic/dom.py \
+       rendering/static/html.py \
+       main.py
+
+prefix := src-cython/untext/
+
+src := $(addprefix $(prefix),$(src))
+
+pyd := $(src:.py=.pyd)
+
+# windows paths
+src := $(subst /,\,$(src))
+pyd := $(subst /,\,$(pyd))
+$(info src = $(src))
+$(info pyd = $(pyd))
+
+
+
+%.pyd: %.py
+	.\build_venv\Scripts\cythonize -i $(subst /,\,$<)
+	cmd /c move $(basename $<).*.pyd $(basename $<).pyd
+
+#c_files := $(src:.py=.c)
+#rm_c_files := $(addprefix rm-,$(c_files))
+#
+#rm-%.c:
+#	del $<
+
+
+src-cython\\untext\\%.pyd: src-cython\\untext\\%.py
+	path := $(subst /,\,$<)
+	$(info path = $(path))
+	.\build_venv\bin\cythonize -i $(path)
+	move $(basename $<).*.pyd $(basename $<).pyd
+
+# TODO: use loops
+cython: prepare_cython $(pyd) $(rm_c_files)
+	del src-cython\untext\rendering\dynamic\dom.c
+	del src-cython\untext\rendering\static\html.c
+	del src-cython\untext\main.c
+	del src-cython\untext\rendering\dynamic\dom.py
+	del src-cython\untext\rendering\static\html.py
+	del src-cython\untext\main.py
+
+
+
+clean-package:
+	del /q untext.tar.gz
+	- rmdir /s /q untext
+
+# not bundling to a single file gives faster boot times
+package: clean-cython clean-package cython
+	.\build_venv\Scripts\pyinstaller src-cython\pyinstall_main.py --add-data src-cython\untext\css\:untext\css
+	cmd /C move dist\pyinstall_main dist\untext
+	cmd /C move dist\untext\pyinstall_main.exe dist\untext\untext.exe
+	cmd /C move dist\untext .\\
+	powershell "Compress-archive untext untext.zip"
+	rmdir /s /q untext
+
+# used for testing (single files are easier to move around)
+#package_onefile: clean-cython clean-package cython
+#	.\build_venv\bin\pyinstaller src-cython\pyinstall_main.py --add-data src-cython\untext\css\:untext\css --onefile
+#	mv dist\pyinstall_main .\untext
+
