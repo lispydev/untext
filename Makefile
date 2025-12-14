@@ -5,19 +5,20 @@
 # package: package the app with pyinstaller and cython, under ./untext.tar.gz
 #
 # additional tasks used in development:
-# test_wheel_local: create a test venv with the wheel built in dist/
-# testpush: upload wheel to test.pypi
+# build_components: build the custom-elements submodule
+# test_wheel_local: create a test venv with the latest wheel built in dist/
 # package_onefile: package the app as a single file, under ./untext
 # package_python: same, but skip the cython build step
 #
 # clean commands:
+# clean-src: remove __pycache__ files
 # clean-tests: clean the test venv
 # clean-package: clean packaged build artifacts
 # clean-cython: clean temporary cython compiled files
 
 
 
-.PHONY: build_prepare build push testpush test_wheel_local test_wheel_test test_wheel_prod clean-tests prepare_cython clean-package clean-cython cython package_python package package_onefile
+.PHONY: build_prepare build push test_wheel_local test_wheel_test test_wheel_prod clean-tests prepare_cython clean-package clean-cython cython package_python package package_onefile
 
 
 #######
@@ -39,17 +40,20 @@ build_components:
 	cp custom-elements/dist/assets/*.js src/untext/js/components.js
 	cp custom-elements/dist/assets/*.css src/untext/css/components.css
 
+
 # build a wheel (.whl) and an sdist (source dist, .tar.gz) in ./dist/
-build: build_components
+build: clean-src build_components
 	./build_venv/bin/python -m build
 
-# push the wheel to pypi.org
+clean-src:
+	find src -name __pycache__ -exec rm -rf {} +
+
+
+# push the wheel to pypi.org and test.pypi.org
 push:
 	./build_venv/bin/python -m twine upload --repository pypi dist/*
-
-# push the wheel to test.pypi.org
-testpush:
 	./build_venv/bin/python -m twine upload --repository testpypi dist/*
+
 
 
 #######
@@ -136,12 +140,18 @@ src := rendering/dynamic/dom.py \
        rendering/static/html.py \
        main.py
 
+cython_files := $(shell cat cython-compile.list)
+cython_files := $(addprefix cython-build/,$(cython_files))
+
+cython_output := $(cython_files:.py=.so)
+
 
 src := $(addprefix src-cython/untext/, $(src))
 
 so := $(src:.py=.so)
 
-src-cython/untext/%.so: src-cython/untext/%.py
+#src-cython/untext/%.so: src-cython/untext/%.py
+%.so: %.py
 	./build_venv/bin/cythonize -i $< #-3
 	# python adds an ABI tag to the name of every cython .so file
 	# example:
@@ -157,6 +167,12 @@ cython: prepare_cython $(so)
 	rm src-cython/untext/rendering/dynamic/dom.py
 	rm src-cython/untext/rendering/static/html.py
 	rm src-cython/untext/main.py
+	# remove trash
+	# TODO: see what's actually needed
+	find src-cython -type d -name build -exec rm -rf {} +
+	find src-cython/ -name __pycache__ -exec rm -rf {} +
+	# pip entrypoint, not used with pyinstaller
+	rm src-cython/untext/__main__.py
 
 
 
