@@ -1,0 +1,3 @@
+[submodule "custom-elements"]
+	path = custom-elements
+	url = git@github.com:lispydev/untext-custom-elements.git
