@@ -1,4 +1,10 @@
-# Running with Pypy
+# Running with Pypy and the latest Pywebview in a venv
+
+This file documents how to pip install pywebview in a virtual environment (venv), and the steps to use pypy while doing so.
+
+These steps are not used for development anymore, and the recommended way to use untext is with the portable releases.
+This file is kept for archival and knownledge preservation, mostly on the subject of running the latest pywebview in a venv.
+
 
 ## Python version concerns
 
