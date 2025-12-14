@@ -32,9 +32,15 @@ build_prepare:
 	# --system-site-packages is needed to access the system pywebview package during the pyinstaller bundling
 	python3 -m venv build_venv --system-site-packages
 	./build_venv/bin/pip install -r build_requirements.txt
+	cd custom-elements && npm i
+
+build_components:
+	cd custom-elements && npm run build
+	cp custom-elements/dist/assets/*.js src/untext/js/components.js
+	cp custom-elements/dist/assets/*.css src/untext/css/components.css
 
 # build a wheel (.whl) and an sdist (source dist, .tar.gz) in ./dist/
-build:
+build: build_components
 	./build_venv/bin/python -m build
 
 # push the wheel to pypi.org
@@ -101,10 +107,10 @@ test_wheel_prod: clean-tests --setup_test_env
 # cython/pyinstaller packaging tasks
 
 # not used anymore; can still be used for quick tests
-package_python:
+package_python: build_components
 	# multi-file build is faster to start, when testing
 	#./build_venv/bin/pyinstaller src/pyinstall_main.py --add-data src/untext/css/:untext/css
-	./build_venv/bin/pyinstaller src/pyinstall_main.py --add-data src/untext/css/:untext/css --onefile
+	./build_venv/bin/pyinstaller src/pyinstall_main.py --add-data src/untext/css/:untext/css ---add-data src/untext/js/:untext/js --onefile
 	# cleanup
 	rm -r build
 	mv dist/pyinstall_main ./untext
@@ -159,8 +165,8 @@ clean-package:
 	rm -rf untext
 
 # not bundling to a single file gives faster boot times
-package: clean-cython clean-package cython
-	./build_venv/bin/pyinstaller src-cython/pyinstall_main.py --add-data src-cython/untext/css/:untext/css
+package: clean-cython clean-package cython build_components
+	./build_venv/bin/pyinstaller src-cython/pyinstall_main.py --add-data src-cython/untext/css/:untext/css --add-data src-cython/untext/css/:untext/css
 	# some files are bundled by pyinstaller without being actually needed
 	# TODO: build in a docker container without the bloat of my personal computer
 	rm -r dist/pyinstall_main/_internal/share
@@ -171,7 +177,7 @@ package: clean-cython clean-package cython
 	rm -r dist/untext
 
 # used for testing (single files are easier to move around)
-package_onefile: clean-cython clean-package cython
-	./build_venv/bin/pyinstaller src-cython/pyinstall_main.py --add-data src-cython/untext/css/:untext/css --onefile
+package_onefile: clean-cython clean-package cython build_components
+	./build_venv/bin/pyinstaller src-cython/pyinstall_main.py --add-data src-cython/untext/css/:untext/css --add-data src-cython/untext/js/:untext/js --onefile
 	mv dist/pyinstall_main ./untext
 
