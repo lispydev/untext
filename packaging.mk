@@ -1,5 +1,6 @@
 # packaging tasks:
 # package: build untext.tar.gz
+#   before packaging, components must be built first with make build-components
 #
 # tasks used when testing:
 # package-onefile: build as a single file binary (more convenient when testing portability, but lower boot times)
@@ -69,8 +70,8 @@ package: _clean-cython _clean-package cython #build_components
 	mv dist/pyinstall_main dist/untext
 	mv dist/untext/pyinstall_main dist/untext/untext
 	cd dist && tar -czf untext.tar.gz untext
+	mv dist/untext ./untext
 	mv dist/untext.tar.gz ./
-	rm -r dist/untext
 	rm -r build
 
 # used for testing (single files are easier to move around)
