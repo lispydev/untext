@@ -75,7 +75,7 @@ package: _clean-cython _clean-package cython #build_components
 	rm -r build
 
 # used for testing (single files are easier to move around)
-package_onefile: _clean-cython _clean-package cython #build_components
+package-onefile: _clean-cython _clean-package cython #build_components
 	./build_venv/bin/pyinstaller cython-build/pyinstall_main.py --add-data cython-build/untext/css/:untext/css --add-data cython-build/untext/js/:untext/js --onefile
 	mv dist/pyinstall_main ./untext
 	rm -r build
