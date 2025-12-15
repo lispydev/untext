@@ -15,12 +15,12 @@
 
 
 # not used anymore; can still be used for quick tests
-package-python: #build_components
+package-python: _clean-package #build_components
 	# multi-file build is faster to start and faster to build, when testing
 	./build_venv/bin/pyinstaller src/pyinstall_main.py --add-data src/untext/css/:untext/css --add-data src/untext/js/:untext/js
 	# cleanup
 	rm -r build
-	mv dist/pyinstall_main ./untext
+	mv dist/pyinstall_main ./untext-python
 
 _prepare-cython:
 	cp -r src cython-build
@@ -59,6 +59,8 @@ cython: _prepare-cython $(cython_output)
 _clean-package:
 	rm -f untext.tar.gz
 	rm -rf untext
+	rm -f untext-onefile
+	rm -rf untext-python
 
 
 # not bundling to a single file gives faster boot times
@@ -77,6 +79,6 @@ package: _clean-cython _clean-package cython #build_components
 # used for testing (single files are easier to move around)
 package-onefile: _clean-cython _clean-package cython #build_components
 	./build_venv/bin/pyinstaller cython-build/pyinstall_main.py --add-data cython-build/untext/css/:untext/css --add-data cython-build/untext/js/:untext/js --onefile
-	mv dist/pyinstall_main ./untext
+	mv dist/pyinstall_main ./untext-onefile
 	rm -r build
 
