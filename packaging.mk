@@ -39,7 +39,7 @@ cython_output := $(cython_files:.py=.so)
 # -> lib.cpython-313-x86_64-linux-gnu.so
 # renaming to lib.so does not break imports
 %.so: %.py
-	./build_venv/bin/cythonize -i $< #-3
+	./build_venv/bin/cythonize -i $< -3
 	mv $(basename $<).*.so $(basename $<).so
 	rm $(basename $<).py
 
