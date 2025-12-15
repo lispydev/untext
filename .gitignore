@@ -1,6 +1,6 @@
 __pycache__
 /dist
-/src-cython
+/cython-build
 /untext
 /src/untext/css/components.css
 /src/untext/js/components.js
