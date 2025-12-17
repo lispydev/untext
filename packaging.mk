@@ -15,12 +15,13 @@
 
 
 # not used anymore; can still be used for quick tests
-package-python: _clean-package #build_components
+package-python: #build_components
 	# multi-file build is faster to start and faster to build, when testing
 	./build_venv/bin/pyinstaller src/main.py --add-data src/untext/css/:untext/css --add-data src/untext/js/:untext/js
 	# cleanup
 	rm -r build
 	mv dist/main ./untext-python
+	mv untext-python/main untext-python/untext
 
 _prepare-cython:
 	cp -r src cython-build
@@ -64,11 +65,11 @@ _clean-package:
 
 
 # not bundling to a single file gives faster boot times
-package: _clean-cython _clean-package cython #build_components
+package: _clean-cython cython #build_components
 	./build_venv/bin/pyinstaller cython-build/main.py --add-data cython-build/untext/css/:untext/css --add-data cython-build/untext/css/:untext/css
 	# some files are bundled by pyinstaller without being actually needed
 	# TODO: build in a docker container without the bloat of my personal computer
-	rm -r dist/main/_internal/share
+	#rm -r dist/main/_internal/share
 	mv dist/main dist/untext
 	mv dist/untext/main dist/untext/untext
 	cd dist && tar -czf untext.tar.gz untext
@@ -77,7 +78,7 @@ package: _clean-cython _clean-package cython #build_components
 	rm -r build
 
 # used for testing (single files are easier to move around)
-package-onefile: _clean-cython _clean-package cython #build_components
+package-onefile: _clean-cython cython #build_components
 	./build_venv/bin/pyinstaller cython-build/main.py --add-data cython-build/untext/css/:untext/css --add-data cython-build/untext/js/:untext/js --onefile
 	mv dist/main ./untext-onefile
 	rm -r build
