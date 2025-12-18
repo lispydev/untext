@@ -113,79 +113,79 @@ AST statement rendering
 
 
 def render(node: ast.stmt):
-    match type(node):
-        case ast.FunctionDef:
-            yield from render_funcdef(node)
-        case ast.AsyncFunctionDef:
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
+    #match type(node):
+    if type(node) == ast.FunctionDef:
+        yield from render_funcdef(node)
+    elif type(node) == ast.AsyncFunctionDef:
+        raise ValueError(f"Unexpected ast statement type: {type(node)}")
 
-        case ast.ClassDef:
-            yield from render_classdef(node)
-        case ast.Return:
-            yield from render_return(node)
+    elif type(node) == ast.ClassDef:
+        yield from render_classdef(node)
+    elif type(node) == ast.Return:
+        yield from render_return(node)
 
-        case ast.Delete:
-            yield from render_delete(node)
-        case ast.Assign:
-            yield from render_assign(node)
-        # 3.12+ feature
-        # TODO: ignore it until pypy reaches 3.12 or stop supporting pypy
-        #case ast.TypeAlias:
-        #    raise ValueError(f"Unexpected ast statement type: {type(node)}")
-        case ast.AugAssign:
-            yield from render_augassign(node)
-        case ast.AnnAssign:
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
+    elif type(node) == ast.Delete:
+        yield from render_delete(node)
+    elif type(node) == ast.Assign:
+        yield from render_assign(node)
+    # 3.12+ feature
+    # TODO: ignore it until pypy reaches 3.12 or stop supporting pypy
+    #case ast.TypeAlias:
+    #    raise ValueError(f"Unexpected ast statement type: {type(node)}")
+    elif type(node) == ast.AugAssign:
+        yield from render_augassign(node)
+    elif type(node) == ast.AnnAssign:
+        raise ValueError(f"Unexpected ast statement type: {type(node)}")
 
-        case ast.For:
-            yield from render_for(node)
-        case ast.AsyncFor:
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
-        case ast.While:
-            yield from render_while(node)
-        case ast.If:
-            yield from render_if(node)
-        case ast.With:
-            yield from render_with(node)
-        case ast.AsyncWith:
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
+    elif type(node) == ast.For:
+        yield from render_for(node)
+    elif type(node) == ast.AsyncFor:
+        raise ValueError(f"Unexpected ast statement type: {type(node)}")
+    elif type(node) == ast.While:
+        yield from render_while(node)
+    elif type(node) == ast.If:
+        yield from render_if(node)
+    elif type(node) == ast.With:
+        yield from render_with(node)
+    elif type(node) == ast.AsyncWith:
+        raise ValueError(f"Unexpected ast statement type: {type(node)}")
 
-        case ast.Match:
-            yield from render_match(node)
+    elif type(node) == ast.Match:
+        yield from render_match(node)
 
-        case ast.Raise:
-            yield from render_raise(node)
-        case ast.Try:
-            # TODO: implement
-            yield from render_try(node)
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
-        case ast.TryStar:
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
-        case ast.Assert:
-            yield from render_assert(node)
+    elif type(node) == ast.Raise:
+        yield from render_raise(node)
+    elif type(node) == ast.Try:
+        # TODO: implement
+        #yield from render_try(node)
+        raise ValueError(f"Unexpected ast statement type: {type(node)}")
+    elif type(node) == ast.TryStar:
+        raise ValueError(f"Unexpected ast statement type: {type(node)}")
+    elif type(node) == ast.Assert:
+        yield from render_assert(node)
 
-        case ast.Import:
-            yield from render_import(node)
-        case ast.ImportFrom:
-            yield from render_importfrom(node)
+    elif type(node) == ast.Import:
+        yield from render_import(node)
+    elif type(node) == ast.ImportFrom:
+        yield from render_importfrom(node)
 
-        case ast.Global:
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
-        case ast.Nonlocal:
-            yield from render_nonlocal(node)
-        case ast.Expr:
-            # TODO: add a wrapper div, to type as a "expr in a statement"
-            yield from expression.render(node.value)
-        case ast.Pass:
-            yield from render_pass(node)
-        case ast.Break:
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
-        case ast.Continue:
-            yield from render_continue(node)
+    elif type(node) == ast.Global:
+        raise ValueError(f"Unexpected ast statement type: {type(node)}")
+    elif type(node) == ast.Nonlocal:
+        yield from render_nonlocal(node)
+    elif type(node) == ast.Expr:
+        # TODO: add a wrapper div, to type as a "expr in a statement"
+        yield from expression.render(node.value)
+    elif type(node) == ast.Pass:
+        yield from render_pass(node)
+    elif type(node) == ast.Break:
+        raise ValueError(f"Unexpected ast statement type: {type(node)}")
+    elif type(node) == ast.Continue:
+        yield from render_continue(node)
 
-        # future python versions may add new things
-        case default:
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
+    # future python versions may add new things
+    else:
+        raise ValueError(f"Unexpected ast statement type: {type(node)}")
 
 
 
@@ -604,28 +604,34 @@ def render_case(node: ast.match_case):
 # TODO: implement missing cases
 @register_node
 def render_pattern(node: ast.pattern):
-    match type(node):
-        case ast.MatchValue:
-            yield from render_match_value(node)
-        case ast.MatchSingleton:
-            yield from render_match_singleton(node)
-        case ast.MatchSequence:
-            yield from render_match_sequence(node)
-        case ast.MatchMapping:
-            yield from render_match_mapping(node)
-        case ast.MatchClass:
-            yield from render_match_class(node)
+    #match type(node):
+    if type(node) == ast.MatchValue:
+        yield from render_match_value(node)
+    elif type(node) == ast.MatchSingleton:
+        raise NotImplementedError(f"Unknown match pattern type: {type(node)}")
+        #yield from render_match_singleton(node)
+    elif type(node) == ast.MatchSequence:
+        raise NotImplementedError(f"Unknown match pattern type: {type(node)}")
+        #yield from render_match_sequence(node)
+    elif type(node) == ast.MatchMapping:
+        raise NotImplementedError(f"Unknown match pattern type: {type(node)}")
+        #yield from render_match_mapping(node)
+    elif type(node) == ast.MatchClass:
+        raise NotImplementedError(f"Unknown match pattern type: {type(node)}")
+        #yield from render_match_class(node)
 
-        case ast.MatchStar:
-            yield from render_match_star(node)
+    elif type(node) == ast.MatchStar:
+        raise NotImplementedError(f"Unknown match pattern type: {type(node)}")
+        #yield from render_match_star(node)
 
-        case ast.MatchAs:
-            yield from render_match_as(node)
-        case ast.MatchOr:
-            yield from render_match_or(node)
+    elif type(node) == ast.MatchAs:
+        yield from render_match_as(node)
+    elif type(node) == ast.MatchOr:
+        raise NotImplementedError(f"Unknown match pattern type: {type(node)}")
+        #yield from render_match_or(node)
 
-        case default:
-            raise ValueError(f"Unexpected match pattern type: {type(node)}")
+    else:
+        raise ValueError(f"Unexpected match pattern type: {type(node)}")
 
 
 @register_node
