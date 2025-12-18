@@ -27,9 +27,13 @@ COPY ./src /app/src
 RUN make build-wheel
 RUN make package
 RUN make package-python
+RUN make package-onefile
 
 
 
 FROM scratch AS export
 COPY --from=build /app/untext /untext
 COPY --from=build /app/untext-python /untext-python
+COPY --from=build /app/untext-onefile /untext-onefile
+COPY --from=build /app/dist/untext-*.whl /
+COPY --from=build /app/dist/untext-*.tar.gz /
