@@ -574,6 +574,8 @@ def render_withitem(node: ast.withitem):
     yield from element("with-item", item)
 
 
+# TODO: write tests to make sure the feature does not bitrot
+# (cython prevents the untext codebase to use match blocks)
 @register_node
 def render_match(node: ast.Match):
     matched = expression.render(node.subject)

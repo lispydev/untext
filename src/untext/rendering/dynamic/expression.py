@@ -13,67 +13,67 @@ from .dom import register, div, block, add_node, add, add_text, add_pre
 
 
 def render(parent: Element, node: ast.expr):
-    match type(node):
-        case ast.BoolOp:
-            return render_boolop(parent, node)
-        case ast.NamedExpr:
-            raise NotImplementedError('expression.render() not implemented for ast.NamedExpr')
-        case ast.BinOp:
-            return render_binop(parent, node)
-        case ast.UnaryOp:
-            return render_unaryop(parent, node)
-        case ast.Lambda:
-            raise NotImplementedError('expression.render() not implemented for ast.Lambda')
-        case ast.IfExp:
-            return render_ifexp(parent, node)
-        case ast.Dict:
-            return render_dict(parent, node)
-        case ast.Set:
-            raise NotImplementedError('expression.render() not implemented for ast.Set')
-        case ast.ListComp:
-            return render_list_comprehension(parent, node)
-        case ast.SetComp:
-            raise NotImplementedError('expression.render() not implemented for ast.SetComp')
-        case ast.DictComp:
-            raise NotImplementedError('expression.render() not implemented for ast.DictComp')
-        case ast.GeneratorExp:
-            raise NotImplementedError('expression.render() not implemented for ast.GeneratorExp')
-        case ast.Await:
-            raise NotImplementedError('expression.render() not implemented for ast.Await')
-        case ast.Yield:
-            raise NotImplementedError('expression.render() not implemented for ast.Yield')
-        case ast.YieldFrom:
-            raise NotImplementedError('expression.render() not implemented for ast.YieldFrom')
-        case ast.Compare:
-            return render_compare(parent, node)
-        case ast.Call:
-            return render_call(parent, node)
-        case ast.FormattedValue:
-            return render_formatted_value(parent, node)
-        # case ast.Interpolation:
-        #     raise NotImplementedError('expression.render() not implemented for ast.Interpolation')
-        case ast.JoinedStr:
-            return render_joinedstr(parent, node)
-        # case ast.TemplateStr:
-        #     raise NotImplementedError('expression.render() not implemented for ast.TemplateStr')
-        case ast.Constant:
-            return render_constant(parent, node)
-        case ast.Attribute:
-            return render_attribute(parent, node)
-        case ast.Subscript:
-            return render_subscript(parent, node)
-        case ast.Starred:
-            return render_starred(parent, node)
-        case ast.Name:
-            return render_name(parent, node)
-        case ast.List:
-            return render_list(parent, node)
-        case ast.Tuple:
-            return render_tuple(parent, node)
-        case ast.Slice:
-            return render_slice(parent, node)
-        case default:
-            raise ValueError(f"Unexpected ast expression type: {type(node)}")
+    #match type(node):
+    if type(node) == ast.BoolOp:
+        return render_boolop(parent, node)
+    elif type(node) == ast.NamedExpr:
+        raise NotImplementedError('expression.render() not implemented for ast.NamedExpr')
+    elif type(node) == ast.BinOp:
+        return render_binop(parent, node)
+    elif type(node) == ast.UnaryOp:
+        return render_unaryop(parent, node)
+    elif type(node) == ast.Lambda:
+        raise NotImplementedError('expression.render() not implemented for ast.Lambda')
+    elif type(node) == ast.IfExp:
+        return render_ifexp(parent, node)
+    elif type(node) == ast.Dict:
+        return render_dict(parent, node)
+    elif type(node) == ast.Set:
+        raise NotImplementedError('expression.render() not implemented for ast.Set')
+    elif type(node) == ast.ListComp:
+        return render_list_comprehension(parent, node)
+    elif type(node) == ast.SetComp:
+        raise NotImplementedError('expression.render() not implemented for ast.SetComp')
+    elif type(node) == ast.DictComp:
+        raise NotImplementedError('expression.render() not implemented for ast.DictComp')
+    elif type(node) == ast.GeneratorExp:
+        raise NotImplementedError('expression.render() not implemented for ast.GeneratorExp')
+    elif type(node) == ast.Await:
+        raise NotImplementedError('expression.render() not implemented for ast.Await')
+    elif type(node) == ast.Yield:
+        raise NotImplementedError('expression.render() not implemented for ast.Yield')
+    elif type(node) == ast.YieldFrom:
+        raise NotImplementedError('expression.render() not implemented for ast.YieldFrom')
+    elif type(node) == ast.Compare:
+        return render_compare(parent, node)
+    elif type(node) == ast.Call:
+        return render_call(parent, node)
+    elif type(node) == ast.FormattedValue:
+        return render_formatted_value(parent, node)
+    # case ast.Interpolation:
+    #     raise NotImplementedError('expression.render() not implemented for ast.Interpolation')
+    elif type(node) == ast.JoinedStr:
+        return render_joinedstr(parent, node)
+    # case ast.TemplateStr:
+    #     raise NotImplementedError('expression.render() not implemented for ast.TemplateStr')
+    elif type(node) == ast.Constant:
+        return render_constant(parent, node)
+    elif type(node) == ast.Attribute:
+        return render_attribute(parent, node)
+    elif type(node) == ast.Subscript:
+        return render_subscript(parent, node)
+    elif type(node) == ast.Starred:
+        return render_starred(parent, node)
+    elif type(node) == ast.Name:
+        return render_name(parent, node)
+    elif type(node) == ast.List:
+        return render_list(parent, node)
+    elif type(node) == ast.Tuple:
+        return render_tuple(parent, node)
+    elif type(node) == ast.Slice:
+        return render_slice(parent, node)
+    else:
+        raise ValueError(f"Unexpected ast expression type: {type(node)}")
 
 
 
