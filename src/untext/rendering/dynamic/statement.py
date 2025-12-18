@@ -12,74 +12,74 @@ from . import expression
 
 
 def render(parent: Element, node: ast.stmt):
-    match type(node):
-        case ast.FunctionDef:
-            return render_funcdef(parent, node)
-        case ast.AsyncFunctionDef:
-            raise NotImplementedError("statement.render() not implemented for ast.AsyncFunctionDef")
-        case ast.ClassDef:
-            return render_classdef(parent, node)
-        case ast.Return:
-            return render_return(parent, node)
+    #match type(node):
+    if type(node) == ast.FunctionDef:
+        return render_funcdef(parent, node)
+    elif type(node) == ast.AsyncFunctionDef:
+        raise NotImplementedError("statement.render() not implemented for ast.AsyncFunctionDef")
+    elif type(node) == ast.ClassDef:
+        return render_classdef(parent, node)
+    elif type(node) == ast.Return:
+        return render_return(parent, node)
 
-        case ast.Delete:
-            return render_delete(parent, node)
-        case ast.Assign:
-            return render_assign(parent, node)
-        # 3.12+ feature
-        # TODO: ignore it until pypy reaches 3.12 or stop supporting pypy
-        # case ast.TypeAlias:
-        #     raise NotImplementedError("statement.render() not implemented for ast.TypeAlias")
-        case ast.AugAssign:
-            return render_augassign(parent, node)
-        case ast.AnnAssign:
-            raise NotImplementedError("statement.render() not implemented for ast.AnnAssign")
+    elif type(node) == ast.Delete:
+        return render_delete(parent, node)
+    elif type(node) == ast.Assign:
+        return render_assign(parent, node)
+    # 3.12+ feature
+    # TODO: ignore it until pypy reaches 3.12 or stop supporting pypy
+    # case ast.TypeAlias:
+    #     raise NotImplementedError("statement.render() not implemented for ast.TypeAlias")
+    elif type(node) == ast.AugAssign:
+        return render_augassign(parent, node)
+    elif type(node) == ast.AnnAssign:
+        raise NotImplementedError("statement.render() not implemented for ast.AnnAssign")
 
-        case ast.For:
-            return render_for(parent, node)
-        case ast.AsyncFor:
-            raise NotImplementedError("statement.render() not implemented for ast.AsyncFor")
-        case ast.While:
-            return render_while(parent, node)
-        case ast.If:
-            return render_if(parent, node)
-        case ast.With:
-            return render_with(parent, node)
-        case ast.AsyncWith:
-            raise NotImplementedError("statement.render() not implemented for ast.AsyncWith")
+    elif type(node) == ast.For:
+        return render_for(parent, node)
+    elif type(node) == ast.AsyncFor:
+        raise NotImplementedError("statement.render() not implemented for ast.AsyncFor")
+    elif type(node) == ast.While:
+        return render_while(parent, node)
+    elif type(node) == ast.If:
+        return render_if(parent, node)
+    elif type(node) == ast.With:
+        return render_with(parent, node)
+    elif type(node) == ast.AsyncWith:
+        raise NotImplementedError("statement.render() not implemented for ast.AsyncWith")
 
-        case ast.Match:
-            return render_match(parent, node)
+    elif type(node) == ast.Match:
+        return render_match(parent, node)
 
-        case ast.Raise:
-            return render_raise(parent, node)
-        case ast.Try:
-            raise NotImplementedError("statement.render() not implemented for ast.Try")
-        case ast.TryStar:
-            raise NotImplementedError("statement.render() not implemented for ast.TryStar")
-        case ast.Assert:
-            return render_assert(parent, node)
+    elif type(node) == ast.Raise:
+        return render_raise(parent, node)
+    elif type(node) == ast.Try:
+        raise NotImplementedError("statement.render() not implemented for ast.Try")
+    elif type(node) == ast.TryStar:
+        raise NotImplementedError("statement.render() not implemented for ast.TryStar")
+    elif type(node) == ast.Assert:
+        return render_assert(parent, node)
 
-        case ast.Import:
-            return render_import(parent, node)
-        case ast.ImportFrom:
-            return render_importfrom(parent, node)
+    elif type(node) == ast.Import:
+        return render_import(parent, node)
+    elif type(node) == ast.ImportFrom:
+        return render_importfrom(parent, node)
 
-        case ast.Global:
-            raise NotImplementedError("statement.render() not implemented for ast.Global")
-        case ast.Nonlocal:
-            return render_nonlocal(parent, node)
-        case ast.Expr:
-            return expression.render(parent, node.value)
-        case ast.Pass:
-            return render_pass(parent, node)
-        case ast.Break:
-            raise NotImplementedError("statement.render() not implemented for ast.Break")
-        case ast.Continue:
-            raise NotImplementedError("statement.render() not implemented for ast.Continue")
+    elif type(node) == ast.Global:
+        raise NotImplementedError("statement.render() not implemented for ast.Global")
+    elif type(node) == ast.Nonlocal:
+        return render_nonlocal(parent, node)
+    elif type(node) == ast.Expr:
+        return expression.render(parent, node.value)
+    elif type(node) == ast.Pass:
+        return render_pass(parent, node)
+    elif type(node) == ast.Break:
+        raise NotImplementedError("statement.render() not implemented for ast.Break")
+    elif type(node) == ast.Continue:
+        raise NotImplementedError("statement.render() not implemented for ast.Continue")
 
-        case default:
-            raise ValueError(f"Unexpected ast statement type: {type(node)}")
+    else:
+        raise ValueError(f"Unexpected ast statement type: {type(node)}")
 
 
 
@@ -126,28 +126,34 @@ def render_case(parent: Element, node: ast.match_case):
 
 # TODO: implement missing cases
 def render_pattern(parent: Element, node: ast.pattern):
-    match type(node):
-        case ast.MatchValue:
-            return render_match_value(parent, node)
-        case ast.MatchSingleton:
-            return render_match_singleton(parent, node)
-        case ast.MatchSequence:
-            return render_match_sequence(parent, node)
-        case ast.MatchMapping:
-            return render_match_mapping(parent, node)
-        case ast.MatchClass:
-            return render_match_class(parent, node)
+    #match type(node):
+    if type(node) == ast.MatchValue:
+        return render_match_value(parent, node)
+    elif type(node) == ast.MatchSingleton:
+        raise NotImplementedError(f"Unknown match pattern type: {type(node)}")
+        #return render_match_singleton(parent, node)
+    elif type(node) == ast.MatchSequence:
+        raise NotImplementedError(f"Unknown match pattern type: {type(node)}")
+        #return render_match_sequence(parent, node)
+    elif type(node) == ast.MatchMapping:
+        raise NotImplementedError(f"Unknown match pattern type: {type(node)}")
+        #return render_match_mapping(parent, node)
+    elif type(node) == ast.MatchClass:
+        raise NotImplementedError(f"Unknown match pattern type: {type(node)}")
+        #return render_match_class(parent, node)
 
-        case ast.MatchStar:
-            return render_match_star(parent, node)
+    elif type(node) == ast.MatchStar:
+        raise NotImplementedError(f"Unknown match pattern type: {type(node)}")
+        #return render_match_star(parent, node)
 
-        case ast.MatchAs:
-            return render_match_as(parent, node)
-        case ast.MatchOr:
-            return render_match_or(parent, node)
+    elif type(node) == ast.MatchAs:
+        return render_match_as(parent, node)
+    elif type(node) == ast.MatchOr:
+        raise NotImplementedError(f"Unknown match pattern type: {type(node)}")
+        #return render_match_or(parent, node)
 
-        case default:
-            raise ValueError(f"Unexpected match pattern type: {type(node)}")
+    else:
+        raise ValueError(f"Unexpected match pattern type: {type(node)}")
 
 
 def render_match_value(parent: Element, node: ast.MatchValue):
