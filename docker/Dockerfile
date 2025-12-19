@@ -15,9 +15,6 @@ RUN npm i
 WORKDIR /app
 COPY ./build_requirements.txt /app/build_requirements.txt
 RUN /venv/bin/pip install -r build_requirements.txt
-COPY ./docker/components.mk /app/components.mk
-COPY ./docker/packaging.mk /app/packaging.mk
-COPY ./docker/wheel.mk /app/wheel.mk
 COPY ./docker/Makefile /app/Makefile
 COPY ./docker/cython-compile.list /app/cython-compile.list
 RUN make prepare-all
@@ -31,7 +28,5 @@ RUN make package
 
 FROM scratch AS export
 COPY --from=build /app/untext /untext
-#COPY --from=build /app/untext-python /untext-python
-#COPY --from=build /app/untext-onefile /untext-onefile
 COPY --from=build /app/dist/untext-*.whl /dist/
 COPY --from=build /app/dist/untext-*.tar.gz /dist/
