@@ -15,11 +15,11 @@ RUN npm i
 WORKDIR /app
 COPY ./build_requirements.txt /app/build_requirements.txt
 RUN /venv/bin/pip install -r build_requirements.txt
-COPY ./components.mk /app/components.mk
-COPY ./packaging.mk /app/packaging.mk
-COPY ./wheel.mk /app/wheel.mk
-COPY ./Makefile /app/Makefile
-COPY ./cython-compile.list /app/cython-compile.list
+COPY ./docker/components.mk /app/components.mk
+COPY ./docker/packaging.mk /app/packaging.mk
+COPY ./docker/wheel.mk /app/wheel.mk
+COPY ./docker/Makefile /app/Makefile
+COPY ./docker/cython-compile.list /app/cython-compile.list
 RUN make prepare-all
 COPY ./pyproject.toml /app/pyproject.toml
 COPY ./README.md /app/README.md
