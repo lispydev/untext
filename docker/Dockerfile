@@ -28,5 +28,6 @@ RUN make package
 
 FROM scratch AS export
 COPY --from=build /app/untext /untext
+COPY --from=build /app/untext.tar.gz /
 COPY --from=build /app/dist/untext-*.whl /dist/
 COPY --from=build /app/dist/untext-*.tar.gz /dist/
