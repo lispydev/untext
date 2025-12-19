@@ -29,6 +29,8 @@ default: prepare update-components release
 # run once after cloning the repository
 prepare:
 	# prepare submodules
+	git submodule init
+	git submodule update
 	cd custom-elements && npm i
 	rm -rf build_venv
 	# --system-site-packages leaves the pywebview setup to the user
