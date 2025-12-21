@@ -88,8 +88,8 @@ push-wheel:
 
 
 
-#clean:
-#	# cache files in src
-#	find src -name __pycache__ -exec rm -rf {} +
+clean-cache:
+	# cache files in src
+	find src -name __pycache__ -exec rm -rf {} +
 
 
