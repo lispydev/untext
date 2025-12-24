@@ -750,7 +750,8 @@ class CodeWindow:
 
         # TODO: update the static renderer and skip the initial DOM rendering
         self.tree = ast.parse(self.source)
-        self.html = "".join(static.statement.render_module(self.tree)) #render_module(self.tree)
+        ast_html = "".join(static.statement.render_module(self.tree))
+        self.html = "<command-palette id='palette'></command-palette>" + ast_html
 
         # the API cannot have a CodeWindow as an attribute
         # the constructor cannot have parameters
@@ -790,6 +791,8 @@ class CodeWindow:
                     self.refresh_module()
                     # start an REPL in the current module
                     code.InteractiveConsole(locals=self.module.__dict__).interact()
+                elif key == "t":
+                    self.show_palette()
                 print(key)
 
         self.api = CodeWindowAPI()
@@ -797,6 +800,20 @@ class CodeWindow:
 
         if load:
             self.load()
+
+    def show_palette(self):
+        dom = self.window.dom
+        print(dom)
+        print(dom.get_element("command-palette"))
+        print(dom.get_element("#palette"))
+        palette = dom.get_element("command-palette")
+        js = """
+        let palette = document.querySelector("command-palette")
+        palette.items = ["a", "b", "c"]
+        palette.onselect = alert
+        palette.update()
+        """
+        self.window.evaluate_js(js)
 
 
     # if the module was already imported in other places,
@@ -812,12 +829,14 @@ class CodeWindow:
     # (load_css, evaluate_js and dom manipulation cannot be done before opening the window)
     def load(self):
         # inject css into the window and load the html
-        for name in ["style.css", "syntax.css"]:
+        for name in ["style.css", "syntax.css", "components.css"]:
             # css files must be searched in the
             # python path with importlib,
             # since they are bundled and installed with pip
             css = resources.files("untext.css").joinpath(name).read_text()
             self.window.load_css(css)
+        components_js = resources.files("untext.js").joinpath("components.js").read_text()
+        self.window.evaluate_js(components_js)
         self.window.evaluate_js(self.api.js_init)
 
         # DOM-based rendering of the whole file
