@@ -15,6 +15,7 @@ import ast
 import sys
 import code
 import os
+import json
 
 # used to load css files in the python import path
 from importlib import resources
@@ -46,6 +47,14 @@ from untext.rendering.dynamic import statement, expression
 
 
 from untext.rendering import static
+
+
+def test_command(window):
+    print("test_command")
+
+commands = {
+    "test": test_command,
+}
 
 
 
@@ -751,6 +760,19 @@ class CodeWindow:
         # TODO: update the static renderer and skip the initial DOM rendering
         self.tree = ast.parse(self.source)
         ast_html = "".join(static.statement.render_module(self.tree))
+        palette_section = """
+        <div id="palette-section">
+            <command-palette id='palette'></command-palette>
+        </div>
+        """
+        ast_section = f"""
+        <div id="ast-section">
+        {ast_html}
+        </div>
+        """
+        page_html = palette_section + ast_section
+        # cannot capture events on #ast-section for some reason
+        #self.html = page_html
         self.html = "<command-palette id='palette'></command-palette>" + ast_html
 
         # the API cannot have a CodeWindow as an attribute
@@ -760,9 +782,14 @@ class CodeWindow:
         class CodeWindowAPI:
             js_init = """
             document.body.addEventListener("keydown", (e) => {
-            pywebview.api.keydown(e.key)
+              pywebview.api.keydown(e.key)
             })
             """
+            #js_init = """
+            #document.querySelector("#ast-section").addEventListener("keydown", (e) => {
+            #  pywebview.api.keydown(e.key)
+            #})
+            #"""
 
             def keydown(_, key):
                 if key == "r":
@@ -795,6 +822,10 @@ class CodeWindow:
                     self.show_palette()
                 print(key)
 
+            def run_command(_, command: str):
+                assert command in commands
+                commands[command](self)
+
         self.api = CodeWindowAPI()
         self.window = webview.create_window(self.module_path, html=self.html, js_api=self.api)
 
@@ -807,10 +838,13 @@ class CodeWindow:
         print(dom.get_element("command-palette"))
         print(dom.get_element("#palette"))
         palette = dom.get_element("command-palette")
-        js = """
+        command_list = json.dumps(list(commands.keys()))
+        js = f"""
         let palette = document.querySelector("command-palette")
-        palette.items = ["a", "b", "c"]
-        palette.onselect = alert
+        palette.items = {command_list}
+        palette.onselect = (cmd) => {{
+          pywebview.api.run_command(cmd)
+        }}
         palette.update()
         """
         self.window.evaluate_js(js)
@@ -838,6 +872,7 @@ class CodeWindow:
         components_js = resources.files("untext.js").joinpath("components.js").read_text()
         self.window.evaluate_js(components_js)
         self.window.evaluate_js(self.api.js_init)
+        self.show_palette()
 
         # DOM-based rendering of the whole file
         # (very slow on longer files, not worth using it here)
