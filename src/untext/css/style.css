@@ -45,3 +45,8 @@ div {
   background-color: rgba(200, 0, 0, 0.5);
 }
 
+
+/* cursor */
+.cursor {
+  background-color: rgba(100, 100, 100, 0.5);
+}

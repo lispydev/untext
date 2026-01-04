@@ -101,7 +101,7 @@ def render_module(node: ast.Module):
             #children.append(f'<div>"""</div><div>{elt.value.value}</div><div>"""</div>')
         else:
             items.append(render(elt))
-    yield from element("module", *items)
+    yield from element("module cursor", *items)
 
 
 
