@@ -441,13 +441,13 @@ def render_constant(node: ast.Constant):
 
 @register_node
 def render_multiline_string(node: ast.Constant):
+    # TODO: render the string without <br> for empty lines ?
+    # (not critical for now, can use the AST node to retrieve the text)
     lines = node.value.split("\n")
     lines[0] = '"""' + lines[0]
     lines[-1] += '"""'
     lines = [text(line) if line else text("<br>") for line in lines]
     lines = [element("", line) for line in lines]
-    #lines = [f"<div>{line}</div>" for line in lines]
-    #output = html.text("".join(lines))
     yield from element("multi-string", *lines)
 
 

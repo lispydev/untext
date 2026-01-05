@@ -63,7 +63,7 @@ stmt = FunctionDef(identifier name, arguments args,
 import ast
 
 # html generation wrappers
-from .html import node, text, element, debug, register_node
+from .html import node, text, element, debug, register_node, slot
 from . import html
 
 # expressions can be found inside statements, but not the opposite
@@ -84,13 +84,11 @@ def render_module(node: ast.Module):
     assert len(node.type_ignores) == 0
     items = []
     for elt in node.body:
-        # top-level strings are usually multiline
-        # here, every statement string is formatted as multiline
         if is_standalone_string(elt):
-            items.append(expression.render_multiline_string(elt.value))
+            items.append(render_standalone_string(elt))
         else:
             items.append(render(elt))
-    yield from element("module cursor", *items)
+    yield from element("module cursor", slot(*items))
 
 # strings which are not used, like docstrings and multiline string comments
 def is_standalone_string(elt: ast.AST):
@@ -174,8 +172,7 @@ def render(node: ast.stmt):
     elif type(node) == ast.Nonlocal:
         yield from render_nonlocal(node)
     elif type(node) == ast.Expr:
-        # TODO: add a wrapper div, to type as a "expr in a statement"
-        yield from expression.render(node.value)
+        yield from render_expression(node)
     elif type(node) == ast.Pass:
         yield from render_pass(node)
     elif type(node) == ast.Break:
@@ -194,6 +191,16 @@ AST statement rendering
 
 (implementation for each type)
 """
+
+@register_node
+def render_expression(node: ast.Expr):
+    yield from element("expr", expression.render(node.value))
+
+@register_node
+def render_standalone_string(node: ast.Expr):
+    # top-level strings are usually multiline
+    # here, every statement string is formatted as multiline
+    yield from element("multi-string-expr", expression.render_multiline_string(node.value))
 
 
 @register_node
