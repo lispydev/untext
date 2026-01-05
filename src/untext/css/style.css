@@ -64,3 +64,6 @@ div {
 .cursor {
   background-color: rgba(100, 100, 100, 0.5);
 }
+.slot {
+  background-color: rgba(50, 100, 0, 0.5);
+}
