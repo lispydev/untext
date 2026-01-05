@@ -439,6 +439,17 @@ def render_constant(node: ast.Constant):
                   attr={"const-type": typename})
     yield from element("constant", const)
 
+@register_node
+def render_multiline_string(node: ast.Constant):
+    lines = node.value.split("\n")
+    lines[0] = '"""' + lines[0]
+    lines[-1] += '"""'
+    lines = [text(line) if line else text("<br>") for line in lines]
+    lines = [element("", line) for line in lines]
+    #lines = [f"<div>{line}</div>" for line in lines]
+    #output = html.text("".join(lines))
+    yield from element("multi-string", *lines)
+
 
 # used by render_constant and render_joinedstr
 def html_serialize_str(txt: str) -> str:

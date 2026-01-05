@@ -85,24 +85,24 @@ def render_module(node: ast.Module):
     items = []
     for elt in node.body:
         # top-level strings are usually multiline
-        # TODO: refactor to make the logic more explicit
-        if isinstance(elt, ast.Expr) and isinstance(elt.value, ast.Constant) and isinstance(elt.value.value, str):
-            lines = elt.value.value.split("\n")
-            lines[0] = '"""' + lines[0]
-            lines[-1] += '"""'
-            lines = [line if line else "<br>" for line in lines]
-            lines = [f"<div>{line}</div>" for line in lines]
-            #items.append("".join(lines))
-            items.append(html.text("".join(lines)))
-            # failed implementation
-            #rendered_text = elt.value.value.replace("\n", "</div><div>")
-            #print(rendered_text)
-            #print("\n" in rendered_text)
-            #children.append(f'<div>"""</div><div>{elt.value.value}</div><div>"""</div>')
+        # here, every statement string is formatted as multiline
+        if is_standalone_string(elt):
+            items.append(expression.render_multiline_string(elt.value))
         else:
             items.append(render(elt))
     yield from element("module cursor", *items)
 
+# strings which are not used, like docstrings and multiline string comments
+def is_standalone_string(elt: ast.AST):
+    # Expr(Constant("docstring"))
+    # (Expr is a statement made of an expression)
+    if not isinstance(elt, ast.Expr):
+        return False
+    if not isinstance(elt.value, ast.Constant):
+        return False
+    if not isinstance(elt.value.value, str):
+        return False
+    return True
 
 
 """
