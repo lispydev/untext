@@ -331,8 +331,8 @@ def render_classdef(node: ast.ClassDef):
 
     # header
     name = text(node.name)
-    kwargs = [expression.render(kwarg) for kwarg in node.keywords]
-    args = [expression.render(arg) for arg in node.bases]
+    kwargs = [slot(expression.render(kwarg)) for kwarg in node.keywords]
+    args = [slot(expression.render(arg)) for arg in node.bases]
     if kwargs or args:
         arguments = html.items("comma-sep row", "row gap", [*kwargs, *args])
         arguments = element("parens row", arguments)
@@ -344,7 +344,7 @@ def render_classdef(node: ast.ClassDef):
 
     # body
     body = [render(stmt) for stmt in node.body]
-    body = element("block", *body)
+    body = element("block", slot(*body))
 
     yield from element("class", decorators, header, body)
 
@@ -352,7 +352,7 @@ def render_classdef(node: ast.ClassDef):
 @register_node
 def render_return(node: ast.Return):
     if node.value is not None:
-        value = expression.render(node.value)
+        value = slot(expression.render(node.value))
     else:
         value = text("")
     yield from element("return return-prefix row gap", value)
@@ -361,7 +361,7 @@ def render_return(node: ast.Return):
 @register_node
 def render_delete(node: ast.Delete):
     # example: del a, b, c
-    items = [expression.render(target) for target in node.targets]
+    items = [slot(expression.render(target)) for target in node.targets]
     items = html.items("comma-sep row", "row gap bg-red", items)
     yield from element("delete del-prefix row gap bg-red", items)
 
@@ -370,25 +370,14 @@ def render_delete(node: ast.Delete):
 def render_assign(node: ast.Assign):
     assert node.type_comment is None
 
-    value = expression.render(node.value)
-    targets = [expression.render(t) for t in node.targets]
+    value = slot(expression.render(node.value))
+    targets = [slot(expression.render(t)) for t in node.targets]
     # display the value as the last (equal-separated) target
     targets.append(value)
     formatted = html.items("assign equal-sep row gap", "row gap", targets)
     yield from formatted
 
 
-
-# augassign:
-#targ = render_expr(node.target)
-#op = render_binaryop(node.op)
-#val = render_expr(node.value)
-#return f"{targ} {op}= {val}"
-
-# TODO: fix: the operator must be displayed
-# format: <node> <op>= <node>
-# <node><gap><op>=<gap><node>
-# (<node> (<op>=) <node>)
 def render_augassign(node: ast.AugAssign):
     target = expression.render(node.target)
     operator = text(expression.read_binaryop(node.op))
@@ -397,7 +386,7 @@ def render_augassign(node: ast.AugAssign):
     empty = element("")
     operator = html.items("equal-sep row", "row", [operator, empty])
     val = expression.render(node.value)
-    yield from element("row gap", target, operator, val)
+    yield from element("row gap bg-red", target, operator, val)
 
 
 @register_node
@@ -406,8 +395,8 @@ def render_for(node: ast.For):
 
     # header
     # example: "for x in lst:"
-    variable = expression.render(node.target)  # "x"
-    iterator = expression.render(node.iter)  # "lst"
+    variable = slot(expression.render(node.target))  # "x"
+    iterator = slot(expression.render(node.iter))  # "lst"
     # "x in lst"
     # TODO: could fit .for-prefix here
     header = html.items("in-sep row gap", "row gap",
@@ -418,7 +407,7 @@ def render_for(node: ast.For):
     header = element("colon-suffix row", header)
 
     body = [render(stmt) for stmt in node.body]
-    body = element("block", *body)
+    body = element("block", slot(*body))
 
 
     # TODO: process for: else: blocks
@@ -441,12 +430,12 @@ def render_for(node: ast.For):
 
 @register_node
 def render_while(node: ast.While):
-    test = expression.render(node.test)
+    test = slot(expression.render(node.test))
     header = element("while-prefix row gap", test)
     header = element("colon-suffix row", header)
 
     body = [render(stmt) for stmt in node.body]
-    body = element("block", *body)
+    body = element("block", slot(*body))
 
     assert not node.orelse
     # if node.orelse:
@@ -460,19 +449,19 @@ def render_if(node: ast.If):
         yield from render_elifs(node)
         return
 
-    test = expression.render(node.test)
+    test = slot(expression.render(node.test))
     header = element("row gap if-prefix", test)
     header = element("row colon-suffix", header)
 
     if_body = [render(stmt) for stmt in node.body]
-    if_block = element("block", *if_body)
+    if_block = element("block", slot(*if_body))
 
     parts = [header, if_block]
 
     if node.orelse:
         else_header = element("row colon-suffix else-prefix")
         else_body = [render(stmt) for stmt in node.orelse]
-        else_block = element("block", *else_body)
+        else_block = element("block", slot(*else_body))
         parts.append(else_header)
         parts.append(else_block)
     yield from element("if", *parts)
@@ -522,24 +511,24 @@ def render_elifs(if_node: ast.If):
 
     # if
     test, body = if_branch
-    test = expression.render(test)
+    test = slot(expression.render(test))
     header = element("row gap if-prefix", test)
     header = element("row colon-suffix", header)
 
     body = [render(stmt) for stmt in body]
-    body = element("block", *body)
+    body = element("block", slot(*body))
 
     if_block = element("if-block", header, body)
     blocks.append(if_block)
 
     # elifs
     for (test, body) in elif_branches:
-        test = expression.render(test)
+        test = slot(expression.render(test))
         header = element("row gap elif-prefix", test)
         header = element("row colon-suffix", header)
 
         body = [render(stmt) for stmt in body]
-        body = element("block", *body)
+        body = element("block", slot(*body))
 
         elif_block = element("elif-block", header, body)
         blocks.append(elif_block)
@@ -548,7 +537,7 @@ def render_elifs(if_node: ast.If):
     if else_body:
         header = element("row else-prefix colon-suffix")
         body = [render(stmt) for stmt in else_body]
-        body = element("block", *body)
+        body = element("block", slot(*body))
         else_block = element("else-block", header, body)
         blocks.append(else_block)
         #header = add(else_elt, "row colon-suffix")
@@ -563,9 +552,9 @@ def render_elifs(if_node: ast.If):
 def render_with(node: ast.With):
     assert node.type_comment is None
     assert len(node.items) == 1  # TODO: test with more cases
-    items = [render_withitem(item) for item in node.items]
+    items = [slot(render_withitem(item)) for item in node.items]
     body = [render(stmt) for stmt in node.body]
-    block = element("block", *body)
+    block = element("block", slot(*body))
     header = element("with-prefix row gap", *items)
     header = element("row colon-suffix", header)
     yield from element("with", header, block)
@@ -575,12 +564,12 @@ def render_with(node: ast.With):
 def render_withitem(node: ast.withitem):
     if node.optional_vars:
         # "<expr> as <name>"
-        expr = expression.render(node.context_expr)
-        name = expression.render(node.optional_vars)
+        expr = slot(expression.render(node.context_expr))
+        name = slot(expression.render(node.optional_vars))
         item = html.items("as-sep row gap", "row gap", [expr, name])
     else:
         # just "<expr>"
-        item = expression.render(node.context_expr)
+        item = slot(expression.render(node.context_expr))
     yield from element("with-item", item)
 
 
@@ -588,12 +577,12 @@ def render_withitem(node: ast.withitem):
 # (cython prevents the untext codebase to use match blocks)
 @register_node
 def render_match(node: ast.Match):
-    matched = expression.render(node.subject)
+    matched = slot(expression.render(node.subject))
     header = element("match-prefix row gap", matched)
     header = element("colon-suffix row", header)
 
     cases = [render_case(case) for case in node.cases]
-    cases = element("block", *cases)
+    cases = element("block", slot(*cases))
 
     yield from element("match", header, cases)
 
@@ -604,15 +593,16 @@ def render_case(node: ast.match_case):
     # TODO: support more cases
     assert node.guard is None
     body = [render(stmt) for stmt in node.body]
-    body = element("block", *body)
+    body = element("block", slot(*body))
     # turns out match patterns are not actually expressions,
     # despite having the same syntax
-    pattern = render_pattern(node.pattern)
+    pattern = slot(render_pattern(node.pattern))
     pattern = element("row gap case-prefix", pattern)
     pattern = element("row colon-suffix", pattern)
     yield from element("case", pattern, body)
 
 
+# TODO: add slots for every case ?
 # TODO: implement missing cases
 @register_node
 def render_pattern(node: ast.pattern):
@@ -648,7 +638,7 @@ def render_pattern(node: ast.pattern):
 
 @register_node
 def render_match_value(node: ast.MatchValue):
-    expr = expression.render(node.value)
+    expr = slot(expression.render(node.value))
     yield from element("match-value", expr)
 
 
@@ -669,7 +659,7 @@ def render_match_as(node: ast.MatchAs):
 def render_raise(node: ast.Raise):
     # TODO: check if support for this attribute is needed
     assert node.cause is None
-    raised = expression.render(node.exc)
+    raised = slot(expression.render(node.exc))
     yield from element("raise raise-prefix row gap", raised)
 
 
@@ -677,7 +667,7 @@ def render_raise(node: ast.Raise):
 def render_assert(node: ast.Assert):
     # TODO: support assertion messages
     assert node.msg is None
-    asserted = expression.render(node.test)
+    asserted = slot(expression.render(node.test))
     yield from element("assert assert-prefix row gap", asserted)
 
 
@@ -689,7 +679,7 @@ def render_import(node: ast.Import):
         aliases.append(
             element(
                 "row gap",
-                render_alias(name)
+                slot(render_alias(name))
             )
         )
     yield from html.node(
@@ -699,7 +689,7 @@ def render_import(node: ast.Import):
             element(
                 "aliases row comma-sep",
                 #*aliases,
-                *[element("row gap", render_alias(name))
+                *[element("row gap", slot(render_alias(name)))
                     for name in node.names]
             )
         )
@@ -736,7 +726,7 @@ def render_importfrom(node: ast.ImportFrom):
     # "a"
     from_module = html.text(node.module or "")
     # ["b", "c as d"]
-    imported = [render_alias(name) for name in node.names]
+    imported = [slot(render_alias(name)) for name in node.names]
     # (comma separated) list items must be wrapped for styling separators
     imported = [html.element("row gap", x) for x in imported]
 
