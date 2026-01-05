@@ -88,6 +88,7 @@ def render_module(node: ast.Module):
             items.append(render_standalone_string(elt))
         else:
             items.append(render(elt))
+    # yield from element("module", slot(*items))
     yield from element("module cursor", slot(*items))
 
 # strings which are not used, like docstrings and multiline string comments
@@ -194,13 +195,15 @@ AST statement rendering
 
 @register_node
 def render_expression(node: ast.Expr):
-    yield from element("expr", expression.render(node.value))
+    yield from element("expr", slot(expression.render(node.value)))
 
 @register_node
 def render_standalone_string(node: ast.Expr):
     # top-level strings are usually multiline
     # here, every statement string is formatted as multiline
-    yield from element("multi-string-expr", expression.render_multiline_string(node.value))
+    # TODO: is there a need for a slot here ?
+    # (.multi-string-expr already determines the content node type, should move this wrapper to expression.render_multiline_string)
+    yield from element("multi-string-expr", slot(expression.render_multiline_string(node.value)))
 
 
 @register_node
@@ -218,24 +221,24 @@ def render_funcdef(node: ast.FunctionDef):
     decorators = [element("at-prefix row", d) for d in decorators]
     # TODO: decide if subcomponents (decorator list, header, body)
     # should be annotated with classes or not
-    decorators = element("decorators", *decorators)
+    decorators = element("decorators", slot(*decorators))
 
     # header
     name = text(node.name)
     funcname = element("row def-prefix gap", name)
-    params = render_parameters(node.args)
+    params = slot(render_parameters(node.args))
     funcparams = element("parens row", params)
     head = element("row", funcname, funcparams)
     if node.returns is not None:
         # "def f(...)" -> "def f(...) -> ..."
-        funcreturn = expression.render(node.returns)
+        funcreturn = slot(expression.render(node.returns))
         head = html.items("row gap return-type-arrow-sep", "row gap",
                           [head, funcreturn])
     header = element("row colon-suffix", head)
 
     # body
     body = [render(stmt) for stmt in node.body]
-    body_block = element("block", *body)
+    body_block = element("block", slot(*body))
 
     yield from element("def", decorators, header, body_block)
 
@@ -263,13 +266,13 @@ def render_parameters(node: ast.arguments):
             param = html.items(
                 "equal-sep row gap",
                 "row gap",
-                [param, default_value]
+                [slot(param), slot(default_value)]
             )
         params.append(param)
 
     # vararg
     if node.vararg is not None:
-        param = render_param(node.vararg)
+        param = slot(render_param(node.vararg))
         starred = element("star-prefix row", param)
         params.append(starred)
 
@@ -290,7 +293,7 @@ def render_parameters(node: ast.arguments):
             param = html.items(
                 "equal-sep row gap",
                 "row gap",
-                [param, default_value]
+                [slot(param), slot(default_value)]
             )
         params.append(param)
 
@@ -311,7 +314,7 @@ def render_param(node: ast.arg):
         yield from param_name
         return
 
-    annotation = expression.render(node.annotation)
+    annotation = slot(expression.render(node.annotation))
     name = element("row colon-suffix", param_name)
     param = element("parameter row gap", name, annotation)
     yield from param

@@ -107,6 +107,8 @@ def text(x: str) -> HTMLGenerator:
     yield x
 
 # container tag for sub-nodes (used for DOM querying)
+# TODO: deprecate
+# (cannot be used with style classes like .row)
 def slot(*items: HTML) -> HTMLGenerator:
     yield from div(classes="slot", *items)
 
