@@ -8,6 +8,20 @@ check the syntax.css file for classes related to the python syntax
 
 /* style unifier (everything is a flex div) */
 
+/* TODO: find a way to never let the overflow happen without background colors following */
+/* for every element, not just module-level cursors */
+.module {
+  /*width: 100%;*/
+  overflow-x: auto;
+}
+body {
+  /*overflow-x: visible;*/
+}
+.root, body {
+  /*overflow-x: visible;*/
+  /*display: flex;*/
+}
+
 div {
   display: flex;
   flex-direction: column;
