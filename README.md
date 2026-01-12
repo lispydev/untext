@@ -35,7 +35,7 @@ The next steps are:
 
 # How to run
 
-Untext can be downloaded in the [github releases](https://github.com/lispydev/untext/releases) for Windows and Linux (tested on Debian 13).
+Untext can be downloaded in the [github](https://github.com/lispydev/untext/releases) or [codeberg](https://codeberg.org/lispydev/untext/releases) releases for Windows and Linux (tested on Debian 13).
 Add the untext directory to your path so that you can run `untext main.py` from anywhere in your system.
 This is the recommended installation process, with no dependency management and with Cython-compiled code.
 
